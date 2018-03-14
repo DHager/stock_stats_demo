@@ -1,3 +1,4 @@
+from .client import StockClient, StockException
 from .command_line import parse_commandline, main
 
 __all__ = ['client', 'command_line']
