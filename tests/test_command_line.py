@@ -20,8 +20,6 @@ class TestArgumentParsing(unittest.TestCase):
 
         def do_nothing(*args, **kwargs):
             pass
-
-        parser.error = do_nothing
         parser._print_message = do_nothing
 
     def test_help(self):
@@ -30,6 +28,13 @@ class TestArgumentParsing(unittest.TestCase):
             self.fail("Expected to end")
         except SystemExit as e:
             self.assertEqual(e.code, 0)
+
+    def test_action_required(self):
+        try:
+            self.parser.parse_args(["-k", "mykey"])
+            self.fail("Expected to end")
+        except SystemExit as e:
+            self.assertEqual(e.code, 2)
 
     def test_symbols(self):
         try:
