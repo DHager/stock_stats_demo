@@ -5,11 +5,11 @@ from stock_stats.command_line import main, create_parser
 from tests import captured_output
 
 
-@unittest.skip("Used only for manual debugging with a valid API key")
+@unittest.skipIf(not os.path.isfile("apikey.txt"),
+                 "Live tests, skip if no stored API key")
 class TestEndToEnd(unittest.TestCase):
     def setUp(self):
         self.parser = create_parser()
-        self.assertTrue(os.path.isfile("apikey.txt"))
         self.apikey = open("apikey.txt", 'r').readline().strip()
 
     def testSymbols(self):
