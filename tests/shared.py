@@ -1,4 +1,6 @@
 import sys
+import os
+from tempfile import mkstemp
 from contextlib import contextmanager
 from io import StringIO
 from stock_stats import HttpClient
@@ -21,10 +23,24 @@ def captured_output():
 
 class MockHttpClient(HttpClient):
     def __init__(self):
-        pass
+        # Maps specific URLs to outputs
+        self.responses = {}  # type: Dict[str, Tuple[str, Dict[str, str]]]
+        self.tempfiles = []  # type: List[str]
 
     def download(self, url: str) -> Tuple[str, Dict[str, str]]:
-        return None, None  # TODO
+        content, headers = self.responses.get(url, (None, None))
+
+        if content is None:
+            raise Exception("No preset response for URL '%s'" % url)
+
+        # In this context callers expect a temp file result
+        (fd, fpath) = mkstemp()
+        self.tempfiles.append(fpath)
+        with os.fdopen(fd, 'wb') as fh:
+            fh.write(content)
+
+        return fpath, headers
 
     def cleanup(self):
-        pass
+        for fpath in self.tempfiles:
+            os.unlink(fpath)
