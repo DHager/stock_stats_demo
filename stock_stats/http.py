@@ -1,4 +1,4 @@
-from urllib import request
+from urllib import request, response
 from urllib.error import HTTPError, URLError, ContentTooShortError
 from typing import Tuple, Dict
 
@@ -19,6 +19,10 @@ class HttpClient(object):
     def __init__(self):
         pass
 
+    def get(self, url: str) -> Tuple[bytes, Dict[str, str]]:
+        with request.urlopen(url) as result:
+            return result.read(), dict(result.info())
+
     def download(self, url: str) -> Tuple[str, Dict[str, str]]:
         """        
         Behaves similarly to urllib.request.urlretrieve()
@@ -26,7 +30,7 @@ class HttpClient(object):
         :return: The temp-file where the content has been downloaded, and a dictionary of HTTP response headers. 
         """
         try:
-            temp_file, headers = request.urlretrieve(url)
+            temp_file, headers = request.urlretrieve(url)  # API may be deprecated in future
             return temp_file, headers
         except (HTTPError, URLError, ContentTooShortError) as e:
             raise HttpException from e
