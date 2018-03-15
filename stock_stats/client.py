@@ -15,7 +15,7 @@ class StockException(Exception):
 
 
 class StockClient(object):
-    CONTENT_TYPE_ZIP = 'application/zip'
+    DEFAULT_BASE_URL = 'https://www.quandl.com/api/v3/databases/WIKI'
 
     def __init__(self, http_client: HttpClient, api_key: str, base_url: str = None):
         """
@@ -23,12 +23,15 @@ class StockClient(object):
         :param base_url: The base URL to use, such as https://www.quandl.com/api/v3/databases/WIKI
         """
         if base_url is None:
-            base_url = 'https://www.quandl.com/api/v3/databases/WIKI'
+            base_url = self.DEFAULT_BASE_URL
 
         base_url.rstrip("/")
         self.http = http_client
         self.base_url = base_url
         self.api_key = api_key
+
+    def _headers_indicate_zipfile(self, headers: Dict[str, str]) -> bool:
+        return headers['Content-Type'] == 'application/zip'
 
     def _payload_to_csv(self, temp_file: str, is_zip: bool = False) -> csv.reader:
         """
@@ -54,7 +57,7 @@ class StockClient(object):
         except (BadZipfile, LargeZipFile) as e:
             raise StockException("Error extracting ZIP data") from e
 
-    def get_symbols(self) -> Dict[str,str]:
+    def get_symbols(self) -> Dict[str, str]:
         """
         :return: Retrieves a list of stock symbols and descriptions.
         :raises StockException: On error, including network errors
@@ -62,11 +65,9 @@ class StockClient(object):
         try:
             url = "%s/codes?api_key=%s" % (self.base_url, self.api_key)
             temp_file, headers = self.http.download(url)
-            is_zip = headers['Content-Type'] == StockClient.CONTENT_TYPE_ZIP
+            is_zip = self._headers_indicate_zipfile(headers)
             reader = self._payload_to_csv(temp_file, is_zip)
-            result = {}
-            for (symbol, desc) in reader:
-                result[symbol] = desc
+            result = {symbol: desc for (symbol, desc) in reader}
             return result
         except HttpException as e:
             raise StockException("Network error") from e
