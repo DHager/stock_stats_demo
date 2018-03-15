@@ -3,6 +3,7 @@ import os
 import json
 from stock_stats.command_line import main, create_parser
 from tests import captured_output
+from typing import Dict
 
 
 @unittest.skipIf(not os.path.isfile("apikey.txt"),
@@ -11,6 +12,14 @@ class TestEndToEnd(unittest.TestCase):
     def setUp(self):
         self.parser = create_parser()
         self.apikey = open("apikey.txt", 'r').readline().strip()
+
+    def _assertDictSubset(self, smaller: Dict, larger: Dict):
+        """
+        Replacement for deprecated TestCase.assertDictContainsSubset, not sure
+        why the deprecation occurred and whether it indicates a fundamental
+        pitfall.
+        """
+        self.assertTrue(set(smaller.items()).issubset(set(larger.items())))
 
     def testSymbols(self):
         expected_entries = {
@@ -22,7 +31,7 @@ class TestEndToEnd(unittest.TestCase):
                 args = self.parser.parse_args(raw_args)
                 main(args)
         actual_entries = json.loads(out.getvalue().strip())
-        self.assertDictContainsSubset(expected_entries, actual_entries)
+        self._assertDictSubset(expected_entries, actual_entries)
 
 
 if __name__ == '__main__':
