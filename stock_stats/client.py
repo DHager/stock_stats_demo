@@ -15,14 +15,14 @@ class StockException(Exception):
 
 
 class StockClient(object):
-    DEFAULT_BASE_URL = 'https://www.quandl.com/api/v3/databases/WIKI'
+    DEFAULT_BASE_URL = 'https://www.quandl.com/api'
     HEADER_CONTENT_TYPE = 'Content-Type'
     CONTENT_TYPE_ZIP = 'application/zip'
 
     def __init__(self, http_client: HttpClient, api_key: str, base_url: str = None):
         """
         :param api_key: The API key
-        :param base_url: The base URL to use, such as https://www.quandl.com/api/v3/databases/WIKI
+        :param base_url: The base URL to use, such as https://www.quandl.com/api
         """
         if base_url is None:
             base_url = self.DEFAULT_BASE_URL
@@ -66,7 +66,7 @@ class StockClient(object):
         :raises StockException: On error, including network errors
         """
         try:
-            url = "%s/codes?api_key=%s" % (self.base_url, self.api_key)
+            url = "%s/v3/databases/WIKI/codes?api_key=%s" % (self.base_url, self.api_key)
             temp_file, headers = self.http.download(url)
             is_zip = self._headers_indicate_zipfile(headers)
             reader = self._payload_to_csv(temp_file, is_zip)

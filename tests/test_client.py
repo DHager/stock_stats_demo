@@ -19,7 +19,7 @@ class TestStockClient(unittest.TestCase):
         self.http_client.cleanup()
 
     def testCsvParsing(self):
-        self.http_client.responses['http://example.com/codes?api_key=KEY'] = (
+        self.http_client.responses['http://example.com/v3/databases/WIKI/codes?api_key=KEY'] = (
             self.get_data('symbols.csv'),
             {}
         )
@@ -32,7 +32,7 @@ class TestStockClient(unittest.TestCase):
         self.assertEqual(expected, symbols)
 
     def testZipExtraction(self):
-        self.http_client.responses['http://example.com/codes?api_key=KEY'] = (
+        self.http_client.responses['http://example.com/v3/databases/WIKI/codes?api_key=KEY'] = (
             self.get_data('symbols.zip'),
             {StockClient.HEADER_CONTENT_TYPE : StockClient.CONTENT_TYPE_ZIP}
         )
@@ -46,8 +46,7 @@ class TestStockClient(unittest.TestCase):
 
     def testBadZipException(self):
         with self.assertRaises(StockException):
-            self.http_client.responses[
-                'http://example.com/codes?api_key=KEY'] = (
+            self.http_client.responses['http://example.com/v3/databases/WIKI/codes?api_key=KEY'] = (
                 self.get_data('corrupt.zip'),
                 {StockClient.HEADER_CONTENT_TYPE: StockClient.CONTENT_TYPE_ZIP}
             )
