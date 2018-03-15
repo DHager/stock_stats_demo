@@ -2,6 +2,7 @@ from urllib import request
 from urllib.error import HTTPError, URLError, ContentTooShortError
 from zipfile import ZipFile, BadZipfile, LargeZipFile
 from io import TextIOWrapper
+import json
 import csv
 
 from typing import List, Dict
@@ -51,7 +52,7 @@ class StockClient(object):
         except (BadZipfile, LargeZipFile) as e:
             raise StockException("Error extracting ZIP data") from e
 
-    def get_symbols(self) -> List[List[str]]:
+    def get_symbols(self) -> Dict[str,str]:
         """
         :return: Retrieves a list of stock symbols and descriptions.
         :raises StockException: On error, including network errors
@@ -61,7 +62,10 @@ class StockClient(object):
             temp_file, headers = request.urlretrieve(url)
             is_zip = headers['Content-Type'] == StockClient.CONTENT_TYPE_ZIP
             reader = self._payload_to_csv(temp_file, is_zip)
-            return list(reader)
+            result = {}
+            for (symbol, desc) in reader:
+                result[symbol] = desc
+            return result
         except (HTTPError, URLError, ContentTooShortError) as e:
             raise StockException("Network error") from e
         finally:

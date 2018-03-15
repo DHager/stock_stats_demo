@@ -2,6 +2,7 @@ from typing import Any, Optional
 import re
 import argparse
 import sys
+import json
 from datetime import date
 from stock_stats import StockClient
 
@@ -58,9 +59,8 @@ def main(args: Any):
     client = StockClient(args.key)
 
     if args.action == 'symbols':
-        rows = client.get_symbols()
-        for (symbol, desc) in rows:
-            print("%s\t%s" % (symbol, desc))
+        symbols = client.get_symbols()
+        print(json.dumps(symbols, sort_keys=True, indent=4, separators=(',', ': ')))
     elif args.action == 'stats':
         raise Exception("Not Yet Implemented")  # TODO
     else:

@@ -5,6 +5,9 @@ from io import StringIO
 
 @contextmanager
 def captured_output():
+    """
+    Temporarily redirects STDOUT and STDERR for capture.    
+    """
     new_out, new_err = StringIO(), StringIO()
     old_out, old_err = sys.stdout, sys.stderr
     try:
