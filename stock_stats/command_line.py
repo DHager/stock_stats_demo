@@ -5,6 +5,7 @@ import sys
 import json
 from datetime import date
 from stock_stats import StockClient
+from stock_stats import HttpClient
 
 def parse_month(val: str) -> date:
     m = re.match(r"^(\d{4})-(\d{2})$", val)
@@ -56,7 +57,8 @@ def parse_commandline() -> Optional[Any]:
 
 
 def main(args: Any):
-    client = StockClient(args.key)
+    http_client = HttpClient()
+    client = StockClient(http_client, args.key)
 
     if args.action == 'symbols':
         symbols = client.get_symbols()

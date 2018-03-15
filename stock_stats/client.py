@@ -1,22 +1,23 @@
-from urllib import request
-from urllib.error import HTTPError, URLError, ContentTooShortError
+from .http import HttpClient, HttpException
 from zipfile import ZipFile, BadZipfile, LargeZipFile
 from io import TextIOWrapper
 import json
 import csv
-
 from typing import List, Dict
 
 
 class StockException(Exception):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    """
+    General purpose exception indicating something has gone wrong in the stock-
+    statistic application.    
+    """
+    pass
 
 
 class StockClient(object):
     CONTENT_TYPE_ZIP = 'application/zip'
 
-    def __init__(self, api_key: str, base_url: str = None):
+    def __init__(self, http_client: HttpClient, api_key: str, base_url: str = None):
         """
         :param api_key: The API key
         :param base_url: The base URL to use, such as https://www.quandl.com/api/v3/databases/WIKI
@@ -25,6 +26,7 @@ class StockClient(object):
             base_url = 'https://www.quandl.com/api/v3/databases/WIKI'
 
         base_url.rstrip("/")
+        self.http = http_client
         self.base_url = base_url
         self.api_key = api_key
 
@@ -59,14 +61,12 @@ class StockClient(object):
         """
         try:
             url = "%s/codes?api_key=%s" % (self.base_url, self.api_key)
-            temp_file, headers = request.urlretrieve(url)
+            temp_file, headers = self.http.download(url)
             is_zip = headers['Content-Type'] == StockClient.CONTENT_TYPE_ZIP
             reader = self._payload_to_csv(temp_file, is_zip)
             result = {}
             for (symbol, desc) in reader:
                 result[symbol] = desc
             return result
-        except (HTTPError, URLError, ContentTooShortError) as e:
+        except HttpException as e:
             raise StockException("Network error") from e
-        finally:
-            request.urlcleanup()

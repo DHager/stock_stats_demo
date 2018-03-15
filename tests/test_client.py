@@ -1,6 +1,6 @@
 import unittest
 import os
-from stock_stats import StockClient, StockException
+from stock_stats import StockClient, StockException, HttpClient
 
 
 class TestStockClient(unittest.TestCase):
@@ -15,7 +15,7 @@ class TestStockClient(unittest.TestCase):
         cls.data_dir = os.path.join(os.path.dirname(__file__), "data")
 
     def setUp(self):
-        self.client = StockClient("NOKEY")
+        self.client = StockClient(HttpClient(), "NOKEY")
 
     def testCsvParsing(self):
         file_name = os.path.join(self.__class__.data_dir, "symbols.csv")
