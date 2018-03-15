@@ -26,13 +26,13 @@ def create_parser() -> argparse.ArgumentParser:
     subparsers = main_parser.add_subparsers(title="Sub-commands", dest='action')
 
     list_parser = subparsers.add_parser('symbols', help="List all ticker-symbols with descriptions.")
-    list_parser.add_argument('-k',
+    list_parser.add_argument('--key',
                              metavar='API_KEY',
                              required=True,
                              help="Quandl API key")
 
     stats_parser = subparsers.add_parser('stats', help="Calculates statistics for a month-to-month span.")
-    stats_parser.add_argument('-k',
+    stats_parser.add_argument('--key',
                               metavar='API_KEY',
                               required=True,
                               help="Quandl API key")
