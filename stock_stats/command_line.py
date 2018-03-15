@@ -1,8 +1,9 @@
+from typing import Any, Optional
 import re
 import argparse
+import sys
 from datetime import date
-from typing import Any, Optional
-
+from stock_stats import StockClient
 
 def parse_month(val: str) -> date:
     m = re.match(r"^(\d{4})-(\d{2})$", val)
@@ -50,19 +51,21 @@ def create_parser() -> argparse.ArgumentParser:
 def parse_commandline() -> Optional[Any]:
     main_parser = create_parser()
     args = main_parser.parse_args()
-
-    # Workaround for not being able to make subcommands mandatory
-    # See: https://bugs.python.org/issue9253#msg186387
-    if args.action is None:
-        main_parser.print_usage()
-        return None
-
     return args
 
 
 def main(args: Any):
-    print("Hello World: " + str(args))
-    # TODO
+    client = StockClient(args.key)
+
+    if args.action == 'symbols':
+        rows = client.get_symbols()
+        for (symbol, desc) in rows:
+            print("%s\t%s" % (symbol, desc))
+    elif args.action == 'stats':
+        raise Exception("Not Yet Implemented")  # TODO
+    else:
+        assert False
+    sys.exit(0)
 
 
 def shell_entry():
@@ -70,6 +73,7 @@ def shell_entry():
     if args is None:
         exit(1)
     main(args)
+
 
 if __name__ == "__main__":
     shell_entry()
