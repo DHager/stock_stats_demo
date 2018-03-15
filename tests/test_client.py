@@ -1,25 +1,24 @@
 import unittest
 import os
 from stock_stats import StockClient, StockException, HttpClient
+from .shared import MockHttpClient
 
 
 class TestStockClient(unittest.TestCase):
-    """
-    Attempts to test the features of the client that do not require a valid API
-    key or network access.
-    """
-
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
         cls.data_dir = os.path.join(os.path.dirname(__file__), "data")
 
+    def get_data_path(self, filename: str) -> str:
+        return os.path.join(self.__class__.data_dir, filename)
+
     def setUp(self):
-        self.client = StockClient(HttpClient(), "NOKEY")
+        self.http_client = MockHttpClient()
+        self.stock_client = StockClient(self.http_client, "NOKEY")
 
     def testCsvParsing(self):
-        file_name = os.path.join(self.__class__.data_dir, "symbols.csv")
-        reader = self.client._payload_to_csv(file_name, False)
+        reader = self.stock_client._payload_to_csv(self.get_data_path('symbols.csv'), False)
 
         rows = list(reader)
         expected = [
@@ -30,8 +29,7 @@ class TestStockClient(unittest.TestCase):
         self.assertEqual(rows, expected)
 
     def testZipExtraction(self):
-        file_name = os.path.join(self.__class__.data_dir, "symbols.zip")
-        reader = self.client._payload_to_csv(file_name, True)
+        reader = self.stock_client._payload_to_csv(self.get_data_path('symbols.zip'), True)
 
         rows = list(reader)
         expected = [
@@ -43,8 +41,7 @@ class TestStockClient(unittest.TestCase):
 
     def testBadZipException(self):
         with self.assertRaises(StockException):
-            file_name = os.path.join(self.__class__.data_dir, "corrupt.zip")
-            reader = self.client._payload_to_csv(file_name, True)
+            reader = self.stock_client._payload_to_csv(self.get_data_path('corrupt.zip'), True)
             data = list(reader)
 
 if __name__ == '__main__':
