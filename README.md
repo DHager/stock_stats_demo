@@ -10,7 +10,7 @@ Requires Python 3.x
 
 You can install this tool using Distutils: Running `setup.py install` will create a `stock_stats` command. 
 
-Installation is not required, you can also run the program in-place with `python3  -m stock_stats.command_line` .
+Installation is not required, you can also run the program in-place with `python3 -m stock_stats` .
 
 ## Usage
 

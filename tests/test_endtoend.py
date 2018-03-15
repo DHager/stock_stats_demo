@@ -25,21 +25,23 @@ class TestEndToEnd(unittest.TestCase):
         expected_entries = {
             "WIKI/AAPL": "Apple Inc (AAPL) Prices, Dividends, Splits and Trading Volume"
         }
-        with self.assertRaises(SystemExit) as ecm:
-            with captured_output() as (out, err):
-                raw_args = ["symbols", "--key", self.apikey]
-                args = self.parser.parse_args(raw_args)
-                main(args)
+
+        with captured_output() as (out, err):
+            raw_args = ["symbols", "--key", self.apikey]
+            args = self.parser.parse_args(raw_args)
+            code = main(args)
+            self.assertEqual(code, 0)
         actual_entries = json.loads(out.getvalue().strip())
         self._assertDictSubset(expected_entries, actual_entries)
 
     @unittest.skip("Incomplete")
     def testSimpleStats(self):
-        with self.assertRaises(SystemExit) as ecm:
-            with captured_output() as (out, err):
-                raw_args = ["stats", "--key", self.apikey, "2001-01", "2020-01","AAPL"]
-                args = self.parser.parse_args(raw_args)
-                main(args)
+
+        with captured_output() as (out, err):
+            raw_args = ["stats", "--key", self.apikey, "2001-01", "2020-01","AAPL"]
+            args = self.parser.parse_args(raw_args)
+            code = main(args)
+            self.assertEqual(code, 0)
         x = out.getvalue().strip()
         self.fail("Incomplete test")
 

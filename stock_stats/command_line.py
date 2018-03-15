@@ -27,6 +27,7 @@ def create_parser() -> argparse.ArgumentParser:
     # 3. Unable to get both subcommands to share their -k configuration, so duplicating for now.
 
     subparsers = main_parser.add_subparsers(title="Sub-commands", dest='action')
+    subparsers.required = True  # Workaround for http://bugs.python.org/issue9253#msg186387
 
     list_parser = subparsers.add_parser('symbols', help="List all ticker-symbols with descriptions.")
     list_parser.add_argument('--key',
@@ -66,15 +67,16 @@ def main(args: Any):
     elif args.action == 'stats':
         raise Exception("Not Yet Implemented")  # TODO
     else:
-        assert False
-    sys.exit(0)
+        return 255
+    return 0
 
 
 def shell_entry():
     args = parse_commandline()
     if args is None:
         exit(1)
-    main(args)
+    code = main(args)
+    sys.exit(code)
 
 
 if __name__ == "__main__":
