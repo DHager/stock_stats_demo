@@ -16,6 +16,8 @@ class StockException(Exception):
 
 class StockClient(object):
     DEFAULT_BASE_URL = 'https://www.quandl.com/api/v3/databases/WIKI'
+    HEADER_CONTENT_TYPE = 'Content-Type'
+    CONTENT_TYPE_ZIP = 'application/zip'
 
     def __init__(self, http_client: HttpClient, api_key: str, base_url: str = None):
         """
@@ -25,13 +27,14 @@ class StockClient(object):
         if base_url is None:
             base_url = self.DEFAULT_BASE_URL
 
-        base_url.rstrip("/")
+        base_url = base_url.rstrip("/")
         self.http = http_client
         self.base_url = base_url
         self.api_key = api_key
 
     def _headers_indicate_zipfile(self, headers: Dict[str, str]) -> bool:
-        return headers['Content-Type'] == 'application/zip'
+        actual = headers.get(self.HEADER_CONTENT_TYPE, None)
+        return actual == self.CONTENT_TYPE_ZIP
 
     def _payload_to_csv(self, temp_file: str, is_zip: bool = False) -> csv.reader:
         """
