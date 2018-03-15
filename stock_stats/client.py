@@ -3,7 +3,7 @@ from zipfile import ZipFile, BadZipfile, LargeZipFile
 from io import TextIOWrapper
 import json
 import csv
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 
 class StockException(Exception):
@@ -62,7 +62,7 @@ class StockClient(object):
 
     def get_symbols(self) -> Dict[str, str]:
         """
-        :return: Retrieves a list of stock symbols and descriptions.
+        :return: Retrieves a dictionary of stock symbols and descriptions.
         :raises StockException: On error, including network errors
         """
         try:
@@ -72,5 +72,36 @@ class StockClient(object):
             reader = self._payload_to_csv(temp_file, is_zip)
             result = {symbol: desc for (symbol, desc) in reader}
             return result
+        except HttpException as e:
+            raise StockException("Network error") from e
+
+    def get_delta_links(self) -> Tuple[List[Dict[str, str]], Dict[str, str]]:
+        """
+        Quick sketch of return structure:
+
+        (
+            [
+                {
+                  "from":       "{date}",
+                  "to":         "{date}",
+                  "deletions":  "{url}",
+                  "insertions": "{url}",
+                  "updates":    "{url}"
+                }
+            ]
+        ),(
+            {
+                "to":           "{date}",
+                "full_data":    "{url}"
+            }
+        )
+        """
+        try:
+            url = "%s/v3/datatables/WIKI/PRICES/delta.json?api_key=%s" % (self.base_url, self.api_key)
+            content, headers = self.http.get(url)
+            d = json.loads(content)
+            files = d['data']['files']
+            full = d['data']['latest_full_data']
+            return files, full
         except HttpException as e:
             raise StockException("Network error") from e

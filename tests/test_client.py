@@ -7,8 +7,8 @@ from .shared import MockHttpClient
 class TestStockClient(unittest.TestCase):
     def get_data(self, filename: str) -> str:
         data_dir = os.path.join(os.path.dirname(__file__), "data")
-        fpath =  os.path.join(data_dir, filename)
-        with open(fpath,'rb') as f:
+        fpath = os.path.join(data_dir, filename)
+        with open(fpath, 'rb') as f:
             return f.read()
 
     def setUp(self):
@@ -34,7 +34,7 @@ class TestStockClient(unittest.TestCase):
     def testZipExtraction(self):
         self.http_client.responses['http://example.com/v3/databases/WIKI/codes?api_key=KEY'] = (
             self.get_data('symbols.zip'),
-            {StockClient.HEADER_CONTENT_TYPE : StockClient.CONTENT_TYPE_ZIP}
+            {StockClient.HEADER_CONTENT_TYPE: StockClient.CONTENT_TYPE_ZIP}
         )
         symbols = self.stock_client.get_symbols()
         expected = {
@@ -51,6 +51,21 @@ class TestStockClient(unittest.TestCase):
                 {StockClient.HEADER_CONTENT_TYPE: StockClient.CONTENT_TYPE_ZIP}
             )
             self.stock_client.get_symbols()
+
+    def testGetDeltaLinks(self):
+        self.http_client.responses['http://example.com/v3/datatables/WIKI/PRICES/delta.json?api_key=KEY'] = (
+            self.get_data('deltas.json'),
+            {}
+        )
+        deltas, bulk = self.stock_client.get_delta_links()
+        self.assertIn("to", bulk)
+        self.assertIn("full_data", bulk)
+        self.assertEqual(len(deltas),6)
+        self.assertIn("from", deltas[0])
+        self.assertIn("to", deltas[0])
+        self.assertIn("insertions", deltas[0])
+        self.assertIn("updates", deltas[0])
+        self.assertIn("deletions", deltas[0])
 
 if __name__ == '__main__':
     unittest.main()

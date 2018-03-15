@@ -33,6 +33,16 @@ class TestEndToEnd(unittest.TestCase):
         actual_entries = json.loads(out.getvalue().strip())
         self._assertDictSubset(expected_entries, actual_entries)
 
+    @unittest.skip("Incomplete")
+    def testSimpleStats(self):
+        with self.assertRaises(SystemExit) as ecm:
+            with captured_output() as (out, err):
+                raw_args = ["stats", "--key", self.apikey, "2001-01", "2020-01","AAPL"]
+                args = self.parser.parse_args(raw_args)
+                main(args)
+        x = out.getvalue().strip()
+        self.fail("Incomplete test")
+
 
 if __name__ == '__main__':
     unittest.main()
