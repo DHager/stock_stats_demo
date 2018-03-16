@@ -27,8 +27,9 @@ class MockHttpClient(HttpClient):
         self.responses = {}  # type: Dict[str, Tuple[str, Dict[str, str]]]
         self.tempfiles = []  # type: List[str]
 
-    def get(self, url: str) -> Tuple[bytes, Dict[str, str]]:
-        content, headers = self.responses.get(url, (None, None))
+    def get(self, url: str, extra_params: Dict = None) -> Tuple[bytes, Dict[str, str]]:
+        final_url = self._get_final_url(url, extra_params)
+        content, headers = self.responses.get(final_url, (None, None))
 
         if content is None:
             raise Exception("No preset response for URL '%s'" % url)
@@ -37,8 +38,9 @@ class MockHttpClient(HttpClient):
 
         return content, headers
 
-    def download(self, url: str) -> Tuple[str, Dict[str, str]]:
-        content, headers = self.get(url)
+    def download(self, url: str, extra_params: Dict = None) -> Tuple[str, Dict[str, str]]:
+        final_url = self._get_final_url(url, extra_params)
+        content, headers = self.get(final_url)
 
         # In this context callers expect a temp file result
         (fd, fpath) = mkstemp()

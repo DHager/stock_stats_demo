@@ -66,8 +66,9 @@ class StockClient(object):
         :raises StockException: On error, including network errors
         """
         try:
-            url = "%s/v3/databases/WIKI/codes?api_key=%s" % (self.base_url, self.api_key)
-            temp_file, headers = self.http.download(url)
+            extra_params = {'api_key': self.api_key}
+            url = "%s/v3/databases/WIKI/codes" % (self.base_url,)
+            temp_file, headers = self.http.download(url, extra_params)
             is_zip = self._headers_indicate_zipfile(headers)
             reader = self._payload_to_csv(temp_file, is_zip)
             result = {symbol: desc for (symbol, desc) in reader}
