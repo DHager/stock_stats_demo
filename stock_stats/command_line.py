@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 import re
 import argparse
 import sys
@@ -124,6 +124,7 @@ def action_month_averages(client: StockClient, symbols: List[str],
         results[symbol] = client.get_monthly_averages(symbol, start_date, end_date)
     print_json(results, pretty)
     return 0
+
 
 def main(args: Any) -> int:
     http_client = HttpClient()

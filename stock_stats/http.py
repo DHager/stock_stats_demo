@@ -26,7 +26,7 @@ class HttpClient(object):
 
         # We alphabetize the extra parameters for unit-testing purposes.
         # Doing so gives us a consistent repeatable final URL.
-        ordered_params = OrderedDict(sorted(extra_params.items(), key=lambda tup : tup[0]))
+        ordered_params = OrderedDict(sorted(extra_params.items(), key=lambda tup: tup[0]))
 
         url_components = list(parse.urlparse(url))
 

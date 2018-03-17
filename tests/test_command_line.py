@@ -6,6 +6,10 @@ from tests import captured_output
 
 
 class TestArgumentParsing(unittest.TestCase):
+    """
+    This set of tests exercises the code that changes command-line arguments
+    into a python data-structure.
+    """
     def setUp(self):
         self.parser = create_parser()
 

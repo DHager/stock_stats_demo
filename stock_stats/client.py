@@ -96,7 +96,7 @@ class StockClient(object):
         except HttpException as e:
             raise StockException("Network error") from e
 
-    def get_monthly_averages(self, symbol: str, start_date :date, end_date: date) -> Dict:
+    def get_monthly_averages(self, symbol: str, start_date: date, end_date: date) -> Dict:
         url = "%s/v3/datasets/WIKI/%s/data.json" % (self.base_url, symbol)
         params = {
             self.PARAM_KEY: self.api_key,

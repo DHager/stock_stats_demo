@@ -6,6 +6,9 @@ from datetime import date
 
 
 class TestStockClient(unittest.TestCase):
+    """
+    This set of tests uses canned HTTP responses to check the behavior of StockClient
+    """
     def get_data(self, filename: str) -> str:
         data_dir = os.path.join(os.path.dirname(__file__), "data")
         fpath = os.path.join(data_dir, filename)
@@ -19,7 +22,7 @@ class TestStockClient(unittest.TestCase):
     def tearDown(self):
         self.http_client.cleanup()
 
-    def testCsvParsing(self):
+    def test_csv_parsing(self):
         self.http_client.responses['http://example.com/v3/databases/WIKI/codes?api_key=KEY'] = (
             self.get_data('symbols.csv'),
             {}
@@ -32,7 +35,7 @@ class TestStockClient(unittest.TestCase):
         }
         self.assertEqual(expected, symbols)
 
-    def testZipExtraction(self):
+    def test_zip_extraction(self):
         self.http_client.responses['http://example.com/v3/databases/WIKI/codes?api_key=KEY'] = (
             self.get_data('symbols.zip'),
             {StockClient.HEADER_CONTENT_TYPE: StockClient.CONTENT_TYPE_ZIP}
@@ -45,7 +48,7 @@ class TestStockClient(unittest.TestCase):
         }
         self.assertEqual(expected, symbols)
 
-    def testBadZipException(self):
+    def test_bad_zip_data(self):
         url = 'http://example.com/v3/databases/WIKI/codes?api_key=KEY'
         with self.assertRaises(StockException):
             self.http_client.responses[url] = (
@@ -55,9 +58,9 @@ class TestStockClient(unittest.TestCase):
             self.stock_client.get_symbols()
 
     @unittest.skip("Incomplete")
-    def testMonthlyAverages(self):
+    def test_monthly_averages(self):
         url = 'http://example.com/v3/datasets/WIKI/GOOGL/data.json?api_key=KEY&collapse=monthly&end_date=2017-06-01&start_date=2017-01-01&transform=cumul'
-        self.http_client.responses[url] = (self.get_data('averages1.json'),{})
+        self.http_client.responses[url] = (self.get_data('averages1.json'), {})
 
         data = self.stock_client.get_monthly_averages('GOOGL', date(2017, 1, 1), date(2017, 6, 1))
 
