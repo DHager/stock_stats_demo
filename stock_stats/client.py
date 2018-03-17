@@ -21,6 +21,15 @@ class StockClient(object):
     HEADER_CONTENT_TYPE = 'Content-Type'
     CONTENT_TYPE_ZIP = 'application/zip'
 
+    PARAM_KEY = 'api_key'
+    PARAM_START = 'start_date'
+    PARAM_END = 'end_date'
+    PARAM_GROUP = 'collapse'
+    PARAM_COMBINE = 'transform'
+
+    GROUP_MONTH = 'monthly'
+    COMBINE_TOTAL = 'cumul'
+
     def __init__(self, http_client: HttpClient, api_key: str, base_url: str = None):
         """
         :param api_key: The API key
@@ -87,33 +96,21 @@ class StockClient(object):
         except HttpException as e:
             raise StockException("Network error") from e
 
-    def get_delta_links(self) -> Tuple[List[Dict[str, str]], Dict[str, str]]:
-        """
-        Quick sketch of return structure:
-
-        (
-            [
-                {
-                  "from":       "{date}",
-                  "to":         "{date}",
-                  "deletions":  "{url}",
-                  "insertions": "{url}",
-                  "updates":    "{url}"
-                }
-            ]
-        ),(
-            {
-                "to":           "{date}",
-                "full_data":    "{url}"
-            }
-        )
-        """
+    def get_monthly_averages(self, symbol: str, start_date :date, end_date: date) -> Dict:
+        url = "%s/v3/datasets/WIKI/%s/data.json" % (self.base_url, symbol)
+        params = {
+            self.PARAM_KEY: self.api_key,
+            self.PARAM_START: start_date.isoformat(),
+            self.PARAM_END: end_date.isoformat(),
+            self.PARAM_GROUP: self.GROUP_MONTH,
+            self.PARAM_COMBINE: self.COMBINE_TOTAL,  # No average? We'll do the division ourselves.
+        }
         try:
-            url = "%s/v3/datatables/WIKI/PRICES/delta.json?api_key=%s" % (self.base_url, self.api_key)
-            content, headers = self.http.get(url)
+            """
+            column_index=4
+            """
+            content, headers = self.http.get(url, params)
             d = json.loads(content)
-            files = d['data']['files']
-            full = d['data']['latest_full_data']
-            return files, full
+            return d
         except HttpException as e:
             raise StockException("Network error") from e

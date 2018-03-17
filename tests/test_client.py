@@ -2,6 +2,7 @@ import unittest
 import os
 from stock_stats import StockClient, StockException, HttpClient
 from .shared import MockHttpClient
+from datetime import date
 
 
 class TestStockClient(unittest.TestCase):
@@ -45,27 +46,21 @@ class TestStockClient(unittest.TestCase):
         self.assertEqual(expected, symbols)
 
     def testBadZipException(self):
+        url = 'http://example.com/v3/databases/WIKI/codes?api_key=KEY'
         with self.assertRaises(StockException):
-            self.http_client.responses['http://example.com/v3/databases/WIKI/codes?api_key=KEY'] = (
+            self.http_client.responses[url] = (
                 self.get_data('corrupt.zip'),
                 {StockClient.HEADER_CONTENT_TYPE: StockClient.CONTENT_TYPE_ZIP}
             )
             self.stock_client.get_symbols()
 
-    def testGetDeltaLinks(self):
-        self.http_client.responses['http://example.com/v3/datatables/WIKI/PRICES/delta.json?api_key=KEY'] = (
-            self.get_data('deltas.json'),
-            {}
-        )
-        deltas, bulk = self.stock_client.get_delta_links()
-        self.assertIn("to", bulk)
-        self.assertIn("full_data", bulk)
-        self.assertEqual(len(deltas),6)
-        self.assertIn("from", deltas[0])
-        self.assertIn("to", deltas[0])
-        self.assertIn("insertions", deltas[0])
-        self.assertIn("updates", deltas[0])
-        self.assertIn("deletions", deltas[0])
+    @unittest.skip("Incomplete")
+    def testMonthlyAverages(self):
+        url = 'http://example.com/v3/datasets/WIKI/GOOGL/data.json?api_key=KEY&collapse=monthly&end_date=2017-06-01&start_date=2017-01-01&transform=cumul'
+        self.http_client.responses[url] = (self.get_data('averages1.json'),{})
+
+        data = self.stock_client.get_monthly_averages('GOOGL', date(2017, 1, 1), date(2017, 6, 1))
+
 
 if __name__ == '__main__':
     unittest.main()

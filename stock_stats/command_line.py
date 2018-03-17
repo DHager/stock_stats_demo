@@ -5,6 +5,7 @@ import sys
 import json
 from datetime import date
 from stock_stats import HttpClient, StockClient
+from typing import List
 
 
 def parse_month(val: str) -> date:
@@ -18,89 +19,138 @@ def parse_month(val: str) -> date:
         raise argparse.ArgumentTypeError("Invalid year-month") from e
 
 
+def _add_parser_global_args(parsers: List[argparse.ArgumentParser]) -> None:
+    # The -h/--help options should already be generated for us unless the
+    # (sub)parser has used add_help=False in its constructor.
+
+    for parser in parsers:
+        # Named group as workaround for https://bugs.python.org/issue9694
+        required_group = parser.add_argument_group('required arguments')
+
+        required_group.add_argument('--key', required=True, metavar='API_KEY',
+                                    help="Quandl API key")
+        parser.add_argument('--pretty', action='store_true',
+                            help="Use pretty-printing in JSON output")
+
+
+def _add_parser_analysis_args(parsers: List[argparse.ArgumentParser]) -> None:
+    for parser in parsers:
+        parser.add_argument('start_month', type=parse_month, help="Start month inclusive. Ex: 2017-01")
+        parser.add_argument('end_month', type=parse_month, help="End month inclusive. Ex: 2017-06")
+        parser.add_argument('symbol', nargs='+', help="Stock symbol. Ex: GOOGL")
+
+
 def create_parser() -> argparse.ArgumentParser:
+    #
+    # I've been having a bunch of problems with creating the two-tiered control
+    # scheme that I want.
+    #
+    # In some arrangements, the -h options (from add_help=True) cause a
+    # collision when using parent/child relationships, and turning them
+    # off makes it work but removes the contextual help.
+    #
+    # So instead of using "parent" relationships, I'm using helper methods
+    # to duplicate configuration across the subparsers.
+
     main_parser = argparse.ArgumentParser(description='Demos access and analysis of stock data.')
 
-    # Known issues:
-    # 1. Can't make subcommand mandatory.
-    # 2. Required -k option is listed under "optional" arguments in help.
-    # 3. Unable to get both subcommands to share their -k configuration, so duplicating for now.
-
+    # Enable two-tiered command structure
     subparsers = main_parser.add_subparsers(title="Sub-commands", dest='action')
     subparsers.required = True  # Workaround for http://bugs.python.org/issue9253#msg186387
 
-    list_parser = subparsers.add_parser('symbols', help="List all ticker-symbols with descriptions.")
-    list_parser.add_argument('--pretty', action='store_true', help="Use pretty-printing in JSON output")
-    list_parser.add_argument('--key',
-                             metavar='API_KEY',
-                             required=True,
-                             help="Quandl API key")
+    # Individual actions
+    listing = subparsers.add_parser(
+        'list-symbols',
+        help="List all ticker-symbols with descriptions."
+    )
 
-    stats_parser = subparsers.add_parser('stats', help="Calculates statistics for a month-to-month span.")
-    stats_parser.add_argument('--pretty', action='store_true', help="Use pretty-printing in JSON output")
-    stats_parser.add_argument('--key',
-                              metavar='API_KEY',
-                              required=True,
-                              help="Quandl API key")
+    month_average = subparsers.add_parser(
+        'month-averages',
+        help="Calculates average statistics for a month-to-month span."
+    )
 
-
-    stats_parser.add_argument('start_month', type=parse_month, help="Start month inclusive. Ex: 2017-01")
-    stats_parser.add_argument('end_month', type=parse_month, help="End month inclusive. Ex: 2017-06")
-    stats_parser.add_argument('symbol', nargs='+', help="Stock symbol. Ex: GOOG")
-
-    # Fancy options
-    stats_parser.add_argument(
-        '--max-daily-profit', action='store_true',
+    best_days = subparsers.add_parser(
+        'best-days',
         help="For each symbol, determines which day offered the highest profit from a single purchase and sale."
     )
-    stats_parser.add_argument(
-        '--busy-day', action='store_true',
+
+    busy_days = subparsers.add_parser(
+        'busy-days',
         help="For each symbol, determine which days had trade-volume of >10%% its average."
     )
-    stats_parser.add_argument(
-        '--biggest-loser', action='store_true',
+
+    biggest_loser = subparsers.add_parser(
+        'biggest-loser',
         help="Determine which symbol had the most days where closing was lower than opening."
     )
+    _add_parser_global_args([
+        listing,
+        month_average,
+        best_days,
+        busy_days,
+        biggest_loser
+    ])
+
+    _add_parser_analysis_args([
+        month_average,
+        best_days,
+        busy_days,
+        biggest_loser
+    ])
 
     return main_parser
 
 
-def parse_commandline() -> Optional[Any]:
-    main_parser = create_parser()
-    args = main_parser.parse_args()
-    return args
-
-
-def action_symbols(client: StockClient, pretty=False) -> int:
-    symbols = client.get_symbols()
+def print_json(data: Any, pretty=False):
     if pretty:
-        out = json.dumps(symbols, sort_keys=True, indent=4, separators=(',', ': '))
+        out = json.dumps(data, sort_keys=True, indent=4, separators=(',', ': '))
     else:
-        out = json.dumps(symbols)
+        out = json.dumps(data)
     print(out)
+
+
+def action_symbols(client: StockClient, pretty: bool = False) -> int:
+    symbols = client.get_symbols()
+    print_json(symbols, pretty)
     return 0
 
 
+def action_month_averages(client: StockClient, symbols: List[str],
+                          start_date: date, end_date: date,
+                          pretty: bool = False
+                          ) -> int:
+    results = {}
+    for symbol in symbols:
+        results[symbol] = client.get_monthly_averages(symbol, start_date, end_date)
+    print_json(results, pretty)
+    return 0
+
 def main(args: Any) -> int:
-
-
     http_client = HttpClient()
     client = StockClient(http_client, args.key)
 
-    if args.action == 'symbols':
+    if args.action == 'list-symbols':
         # No additional arguments needed for this command
         return action_symbols(client, args.pretty)
-    elif args.action == 'stats':
-        raise Exception("Not Yet Implemented")  # TODO
-    else:
-        return 255
-    return 0
+    elif args.action == 'month-averages':
+        return action_month_averages(client, args.symbol, args.start_month, args.end_month, args.pretty)
+    elif args.action == 'best-days':
+        raise Exception("Not yet implemented")
+    elif args.action == 'busy-days':
+        raise Exception("Not yet implemented")
+    elif args.action == 'biggest-loser':
+        raise Exception("Not yet implemented")
+
+    return 4  # Nothing matched
 
 
 def shell_entry():
-    args = parse_commandline()
+    main_parser = create_parser()
+    args = main_parser.parse_args()
+
     if args is None:
         exit(1)
+
     code = main(args)
     sys.exit(code)
 

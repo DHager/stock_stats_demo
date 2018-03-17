@@ -27,7 +27,7 @@ class TestEndToEnd(unittest.TestCase):
         }
 
         with captured_output() as (out, err):
-            raw_args = ["symbols", "--key", self.apikey]
+            raw_args = ["list-symbols", "--key", self.apikey]
             args = self.parser.parse_args(raw_args)
             code = main(args)
             self.assertEqual(code, 0)
@@ -36,14 +36,14 @@ class TestEndToEnd(unittest.TestCase):
 
     @unittest.skip("Incomplete")
     def testSimpleStats(self):
-
         with captured_output() as (out, err):
-            raw_args = ["stats", "--key", self.apikey, "2017-01", "2017-06", "GOOG"]
+            raw_args = ["month-averages", "--key", self.apikey, "2017-01", "2017-06", "GOOGL"]
             args = self.parser.parse_args(raw_args)
             code = main(args)
             self.assertEqual(code, 0)
-        x = out.getvalue().strip()
-        self.fail("Incomplete test")
+        text = out.getvalue().strip()
+        data = json.loads(text)
+        self.assertIn("GOOGL", data)
 
 
 if __name__ == '__main__':

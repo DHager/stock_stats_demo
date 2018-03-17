@@ -26,13 +26,13 @@ class TestArgumentParsing(unittest.TestCase):
         self.assertEqual(ecm.exception.code, 2)
 
     def test_symbols(self):
-        cmdline = ["symbols", "--key", "mykey"]
+        cmdline = ["list-symbols", "--key", "mykey"]
         with captured_output() as (out, err):
             args = self.parser.parse_args(cmdline)
         self.assertIsNotNone(args)
 
     def test_stats_basic(self):
-        cmdline = ["stats", "--key", "mykey",
+        cmdline = ["month-averages", "--key", "mykey",
                    "2001-01", "2020-01",
                    "BUY", "N", "LARGE"
                    ]
