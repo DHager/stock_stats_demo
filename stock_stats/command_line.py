@@ -30,12 +30,14 @@ def create_parser() -> argparse.ArgumentParser:
     subparsers.required = True  # Workaround for http://bugs.python.org/issue9253#msg186387
 
     list_parser = subparsers.add_parser('symbols', help="List all ticker-symbols with descriptions.")
+    list_parser.add_argument('--pretty', action='store_true', help="Use pretty-printing in JSON output")
     list_parser.add_argument('--key',
                              metavar='API_KEY',
                              required=True,
                              help="Quandl API key")
 
     stats_parser = subparsers.add_parser('stats', help="Calculates statistics for a month-to-month span.")
+    stats_parser.add_argument('--pretty', action='store_true', help="Use pretty-printing in JSON output")
     stats_parser.add_argument('--key',
                               metavar='API_KEY',
                               required=True,
@@ -69,6 +71,14 @@ def parse_commandline() -> Optional[Any]:
     return args
 
 
+def action_symbols(client: StockClient, pretty=False) -> int:
+    symbols = client.get_symbols()
+    if pretty:
+        out = json.dumps(symbols, sort_keys=True, indent=4, separators=(',', ': '))
+    else:
+        out = json.dumps(symbols)
+    print(out)
+    return 0
 
 
 def main(args: Any) -> int:
@@ -78,8 +88,8 @@ def main(args: Any) -> int:
     client = StockClient(http_client, args.key)
 
     if args.action == 'symbols':
-        symbols = client.get_symbols()
-        print(json.dumps(symbols, sort_keys=True, indent=4, separators=(',', ': ')))
+        # No additional arguments needed for this command
+        return action_symbols(client, args.pretty)
     elif args.action == 'stats':
         raise Exception("Not Yet Implemented")  # TODO
     else:
