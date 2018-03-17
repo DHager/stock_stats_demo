@@ -2,6 +2,8 @@
 
 A demo involving access to the Quandl WIKI Prices API and analysis of the data.
 
+This demo deliberately does NOT use quandl's own python package.
+
 ## Requirements
 
 Requires Python 3.x
@@ -12,12 +14,12 @@ You can install this tool using Distutils: Running `setup.py install` will creat
 
 Installation is not required, you can also run the program in-place with `python3 -m stock_stats` .
 
-## Usage
+## Example Usage
 
     stock_stats symbols -k API_KEY
-    stock_stats stats -k API_KEY 2001-01 2020-01 AAPL MSFT FB AMZN GOOG
+    stock_stats stats -k API_KEY 2017-01 2017-06 COF GOOG MSFT
 
-## Running tests
+## Running Tests
 
     python3 -m unittest tests/test_*
 

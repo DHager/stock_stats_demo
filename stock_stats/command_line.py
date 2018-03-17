@@ -48,14 +48,24 @@ def create_parser() -> argparse.ArgumentParser:
                               required=True,
                               help="Quandl API key")
 
-    clean_parser = subparsers.add_parser('clean', help="Cleans caches")
 
-    stats_parser.add_argument('start_month', type=parse_month, help="Start month inclusive. Ex: 2018-01")
-    stats_parser.add_argument('end_month', type=parse_month, help="End month inclusive. Ex: 2018-12")
-    stats_parser.add_argument('symbols', nargs='+', help="Stock symbols")
-    stats_parser.add_argument('--max-daily-profit', action='store_true')
-    stats_parser.add_argument('--busy-day', action='store_true')
-    stats_parser.add_argument('--biggest-loser', action='store_true')
+    stats_parser.add_argument('start_month', type=parse_month, help="Start month inclusive. Ex: 2017-01")
+    stats_parser.add_argument('end_month', type=parse_month, help="End month inclusive. Ex: 2017-06")
+    stats_parser.add_argument('symbol', nargs='+', help="Stock symbol. Ex: GOOG")
+
+    # Fancy options
+    stats_parser.add_argument(
+        '--max-daily-profit', action='store_true',
+        help="For each symbol, determines which day offered the highest profit from a single purchase and sale."
+    )
+    stats_parser.add_argument(
+        '--busy-day', action='store_true',
+        help="For each symbol, determine which days had trade-volume of >10%% its average."
+    )
+    stats_parser.add_argument(
+        '--biggest-loser', action='store_true',
+        help="Determine which symbol had the most days where closing was lower than opening."
+    )
 
     return main_parser
 

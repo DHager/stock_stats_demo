@@ -38,7 +38,7 @@ class TestEndToEnd(unittest.TestCase):
     def testSimpleStats(self):
 
         with captured_output() as (out, err):
-            raw_args = ["stats", "--key", self.apikey, "2001-01", "2020-01","AAPL"]
+            raw_args = ["stats", "--key", self.apikey, "2017-01", "2017-06", "GOOG"]
             args = self.parser.parse_args(raw_args)
             code = main(args)
             self.assertEqual(code, 0)
