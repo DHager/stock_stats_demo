@@ -1,6 +1,7 @@
 from urllib import request, response, parse
 from urllib.error import HTTPError, URLError, ContentTooShortError
 from typing import Tuple, Dict
+from collections import OrderedDict
 
 
 class HttpException(Exception):
@@ -23,10 +24,14 @@ class HttpClient(object):
         if extra_params is None:
             extra_params = {}
 
+        # We alphabetize the extra parameters for unit-testing purposes.
+        # Doing so gives us a consistent repeatable final URL.
+        ordered_params = OrderedDict(sorted(extra_params.items(), key=lambda tup : tup[0]))
+
         url_components = list(parse.urlparse(url))
 
         original_params = dict(parse.parse_qsl(url_components[4]))
-        original_params.update(extra_params)
+        original_params.update(ordered_params)
         url_components[4] = parse.urlencode(original_params)
 
         return parse.urlunparse(url_components)
