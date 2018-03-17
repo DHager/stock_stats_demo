@@ -3,6 +3,8 @@ from zipfile import ZipFile, BadZipfile, LargeZipFile
 from io import TextIOWrapper
 import json
 import csv
+from collections import OrderedDict
+from datetime import date
 from typing import List, Dict, Tuple
 
 
@@ -66,12 +68,21 @@ class StockClient(object):
         :raises StockException: On error, including network errors
         """
         try:
-            extra_params = {'api_key': self.api_key}
+            params = {
+                'api_key': self.api_key
+            }
             url = "%s/v3/databases/WIKI/codes" % (self.base_url,)
-            temp_file, headers = self.http.download(url, extra_params)
+            temp_file, headers = self.http.download(url, params)
             is_zip = self._headers_indicate_zipfile(headers)
             reader = self._payload_to_csv(temp_file, is_zip)
-            result = {symbol: desc for (symbol, desc) in reader}
+
+            result = OrderedDict()
+            for (symbol, desc) in reader:
+                # Intitial output seems to be in form DATABASE/DATASET, so we
+                # want to strip the WIKI/ part out.
+                short_name = symbol.split("/")[1]
+                result[short_name] = desc
+
             return result
         except HttpException as e:
             raise StockException("Network error") from e

@@ -25,9 +25,9 @@ class TestStockClient(unittest.TestCase):
         )
         symbols = self.stock_client.get_symbols()
         expected = {
-            'WIKI/AAPL': 'Apple Inc (AAPL) Prices, Dividends, Splits and Trading Volume',
-            'WIKI/ABC': 'AmerisourceBergen Corp. (ABC) Prices, Dividends, Splits and Trading Volume',
-            'WIKI/AA': 'Alcoa Inc. (AA) Prices, Dividends, Splits and Trading Volume',
+            'AAPL': 'Apple Inc (AAPL) Prices, Dividends, Splits and Trading Volume',
+            'ABC': 'AmerisourceBergen Corp. (ABC) Prices, Dividends, Splits and Trading Volume',
+            'AA': 'Alcoa Inc. (AA) Prices, Dividends, Splits and Trading Volume',
         }
         self.assertEqual(expected, symbols)
 
@@ -38,9 +38,9 @@ class TestStockClient(unittest.TestCase):
         )
         symbols = self.stock_client.get_symbols()
         expected = {
-            'WIKI/AAPL': 'Apple Inc (AAPL) Prices, Dividends, Splits and Trading Volume',
-            'WIKI/ABC': 'AmerisourceBergen Corp. (ABC) Prices, Dividends, Splits and Trading Volume',
-            'WIKI/AA': 'Alcoa Inc. (AA) Prices, Dividends, Splits and Trading Volume',
+            'AAPL': 'Apple Inc (AAPL) Prices, Dividends, Splits and Trading Volume',
+            'ABC': 'AmerisourceBergen Corp. (ABC) Prices, Dividends, Splits and Trading Volume',
+            'AA': 'Alcoa Inc. (AA) Prices, Dividends, Splits and Trading Volume',
         }
         self.assertEqual(expected, symbols)
 

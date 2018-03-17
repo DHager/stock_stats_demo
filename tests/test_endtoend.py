@@ -23,7 +23,7 @@ class TestEndToEnd(unittest.TestCase):
 
     def testSymbols(self):
         expected_entries = {
-            "WIKI/AAPL": "Apple Inc (AAPL) Prices, Dividends, Splits and Trading Volume"
+            "AAPL": "Apple Inc (AAPL) Prices, Dividends, Splits and Trading Volume"
         }
 
         with captured_output() as (out, err):
