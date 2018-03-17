@@ -5,13 +5,6 @@ import sys
 import json
 from datetime import date
 from stock_stats import HttpClient, StockClient
-import os
-import shutil
-
-
-def pick_storage_folder():
-    # Not sure which OSes this doesn't work on
-    return os.path.expanduser(os.path.join("~", ".stock_stats"))
 
 
 def parse_month(val: str) -> date:
@@ -76,24 +69,10 @@ def parse_commandline() -> Optional[Any]:
     return args
 
 
-def do_clean(storage_folder: str) -> int:
-    if not os.path.isdir(storage_folder):
-        print("Nothing to clean, %s does not exist" % storage_folder)
-        return 0
-    entry = input("Deleting %s, type 'confirm' to proceed: " % storage_folder)
-    if entry == 'confirm':
-        shutil.rmtree(storage_folder)
-        return 0
-    else:
-        print("Clean canceled.")
-        return 1
 
 
 def main(args: Any) -> int:
-    storage_folder = pick_storage_folder()
 
-    if args.action == 'clean':
-        return do_clean(storage_folder)
 
     http_client = HttpClient()
     client = StockClient(http_client, args.key)
