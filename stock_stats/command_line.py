@@ -138,7 +138,19 @@ def print_json(data: Any, pretty=False):
         out = json.dumps(data, sort_keys=True, indent=4, separators=(',', ': '))
     else:
         out = json.dumps(data)
-    print(out)
+
+    # Trying to flush immediately doesn't seem to fix the stack trace of:
+    # BrokenPipeError: [Errno 32] Broken pipe
+    # ... which can be encountered when piping output to head.
+    try:
+        print(out)
+    except BrokenPipeError as e:
+        # This still prints to STDERR but it's a milder message
+        # print(e, file=sys.stderr)
+        # sys.stderr.close()
+        pass
+
+
 
 
 def action_symbols(client: StockClient, pretty: bool = False) -> int:
