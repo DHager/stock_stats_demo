@@ -159,7 +159,7 @@ def action_best_days(client: StockClient, symbols: List[str],
                           ) -> int:
     results = {}
     for symbol in symbols:
-        result = client.get_best_days(symbol, start_date, end_date, adjusted)
+        result = client.get_best_day(symbol, start_date, end_date, adjusted)
         # Adjust to make it JSON-able
         result['date'] = result['date'].isoformat()
         results[symbol] = result

@@ -93,7 +93,7 @@ class TestStockClient(unittest.TestCase):
               '?api_key=KEY&end_date=2017-06-01&start_date=2017-01-01'
         self.http_client.responses[url] = (self._get_data('averages1.json'), {})
 
-        data = self.stock_client.get_best_days(
+        data = self.stock_client.get_best_day(
             'GOOGL',
             date(2017, 1, 1),
             date(2017, 6, 1),

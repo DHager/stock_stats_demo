@@ -185,9 +185,9 @@ class StockClient(object):
             raise StockException("Data encoding error") from e
         return days
 
-    def get_best_days(self, symbol: str, start_date: date,
-                      end_date: date, adjusted: bool
-                      ) -> Dict[str, Any]:
+    def get_best_day(self, symbol: str, start_date: date,
+                     end_date: date, adjusted: bool
+                     ) -> Dict[str, Any]:
 
         days = self._get_standard_timeseries(end_date, start_date, symbol)
 
