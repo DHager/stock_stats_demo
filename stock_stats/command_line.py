@@ -60,7 +60,6 @@ def _add_parser_analysis_args(parsers: List[argparse.ArgumentParser]) -> None:
                             help="Use adjusted values where applicable")
 
 
-
 def create_parser() -> argparse.ArgumentParser:
     #
     # I've been having a bunch of problems with creating the two-tiered control
@@ -129,6 +128,12 @@ def create_parser() -> argparse.ArgumentParser:
 
 
 def print_json(data: Any, pretty=False):
+    # I tried to use cls= and default= parameters to do custom serialization of
+    # date objects, but unfortunately it only works if they are NOT dictionary
+    # keys!
+    #
+    # See: https://bugs.python.org/issue18820
+
     if pretty:
         out = json.dumps(data, sort_keys=True, indent=4, separators=(',', ': '))
     else:
@@ -148,20 +153,40 @@ def action_month_averages(client: StockClient, symbols: List[str],
                           ) -> int:
     results = {}
     for symbol in symbols:
-        results[symbol] = client.get_monthly_averages(symbol, start_date, end_date, adjusted)
+        results[symbol] = client.get_monthly_averages(symbol, start_date,
+                                                      end_date, adjusted)
     print_json(results, pretty)
     return 0
 
 
 def action_best_days(client: StockClient, symbols: List[str],
-                          start_date: date, end_date: date,
-                          adjusted: bool = False, pretty: bool = False
-                          ) -> int:
+                     start_date: date, end_date: date,
+                     adjusted: bool = False, pretty: bool = False
+                     ) -> int:
     results = {}
     for symbol in symbols:
         result = client.get_best_day(symbol, start_date, end_date, adjusted)
         # Adjust to make it JSON-able
         result['date'] = result['date'].isoformat()
+        results[symbol] = result
+
+    print_json(results, pretty)
+    return 0
+
+
+def action_busy_days(client: StockClient, symbols: List[str],
+                     start_date: date, end_date: date,
+                     adjusted: bool = False, pretty: bool = False
+                     ) -> int:
+    results = {}
+    for symbol in symbols:
+        result = client.get_busy_days(symbol, start_date, end_date, adjusted)
+        # Adjust to make it JSON-able
+        # Custom encoder won't work due to https://bugs.python.org/issue18820
+        result['busy_days'] = {
+            k.isoformat(): result['busy_days'][k]
+            for k in result['busy_days']
+        }
         results[symbol] = result
 
     print_json(results, pretty)
@@ -182,7 +207,8 @@ def main(args: Any) -> int:
         return action_best_days(client, args.symbol, args.start_month,
                                 args.end_month, args.adjusted, args.pretty)
     elif args.action == 'busy-days':
-        raise Exception("Not yet implemented")
+        return action_busy_days(client, args.symbol, args.start_month,
+                                args.end_month, args.adjusted, args.pretty)
     elif args.action == 'biggest-loser':
         raise Exception("Not yet implemented")
 
