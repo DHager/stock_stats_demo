@@ -2,8 +2,9 @@ import csv
 import json
 from collections import OrderedDict
 from datetime import date
+from functools import reduce
 from io import TextIOWrapper
-from typing import Dict, List, Union, Any
+from typing import Any, Dict, List, Union
 from zipfile import BadZipfile, LargeZipFile, ZipFile
 
 from .http import HttpClient, HttpException
@@ -37,6 +38,8 @@ class StockClient(object):
     COL_HIGH = 'High'
     COL_ADJ_LOW = 'Adj. Low'
     COL_ADJ_HIGH = 'Adj. High'
+    COL_VOLUME = 'Volume'
+    COL_ADJ_VOLUME = 'Adj. Volume'
 
     def __init__(self, http_client: HttpClient, api_key: str,
                  base_url: str = None):
@@ -210,4 +213,28 @@ class StockClient(object):
         return {
             "date":   best_day[self.COL_DATE],
             "spread": best_spread
+        }
+
+    def get_busy_days(self, symbol: str, start_date: date,
+                      end_date: date, adjusted: bool
+                      ) -> Dict[str, Any]:
+
+        days = self._get_standard_timeseries(end_date, start_date, symbol)
+
+        if adjusted:
+            vol_column = self.COL_VOLUME
+        else:
+            vol_column = self.COL_ADJ_VOLUME
+
+        total_volume = reduce(lambda a, b: a + b,
+                              map(lambda d: d[vol_column], days))
+        mean_volume = total_volume / len(days)
+        threshold = mean_volume * 1.10
+        busy_days = {}
+        for day in days:
+            if day[vol_column] > threshold:
+                busy_days[day[self.COL_DATE]] = day[vol_column]
+        return {
+            "average_volume": mean_volume,
+            "busy_days":      busy_days
         }

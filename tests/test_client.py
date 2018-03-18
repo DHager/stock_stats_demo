@@ -107,6 +107,61 @@ class TestStockClient(unittest.TestCase):
         self.assertEqual(data['date'], expected_date)
         self.assertAlmostEqual(data['spread'], expected_spread)
 
+    def test_busy_days(self):
+        url = 'http://example.com/v3/datasets/WIKI/GOOGL/data.json' \
+              '?api_key=KEY&end_date=2017-06-01&start_date=2017-01-01'
+        self.http_client.responses[url] = (self._get_data('averages1.json'), {})
+
+        data = self.stock_client.get_busy_days(
+            'GOOGL',
+            date(2017, 1, 1),
+            date(2017, 6, 1),
+            adjusted=False
+        )
+
+        expected_average = 1632363.696
+        expected_days = [
+            (date(2017, 6, 30), 2185444),
+            (date(2017, 6, 29), 3182331),
+            (date(2017, 6, 28), 2713366),
+            (date(2017, 6, 27), 2428048),
+            (date(2017, 6, 16), 2484914),
+            (date(2017, 6, 15), 2349212),
+            (date(2017, 6, 13), 1992456),
+            (date(2017, 6, 12), 4167184),
+            (date(2017, 6, 9), 3613964),
+            (date(2017, 5, 25), 1951402),
+            (date(2017, 5, 17), 2414323),
+            (date(2017, 5, 8), 1863198),
+            (date(2017, 5, 4), 1934652),
+            (date(2017, 5, 1), 2294856),
+            (date(2017, 4, 28), 3753169),
+            (date(2017, 4, 27), 1817740),
+            (date(2017, 4, 25), 2020460),
+            (date(2017, 4, 5), 1855153),
+            (date(2017, 4, 3), 1969402),
+            (date(2017, 3, 27), 1935211),
+            (date(2017, 3, 24), 2105682),
+            (date(2017, 3, 23), 3287669),
+            (date(2017, 3, 21), 2537978),
+            (date(2017, 3, 17), 1868252),
+            (date(2017, 3, 1), 1818671),
+            (date(2017, 2, 1), 2251047),
+            (date(2017, 1, 31), 2020180),
+            (date(2017, 1, 30), 3516933),
+            (date(2017, 1, 27), 3752497),
+            (date(2017, 1, 26), 3493251),
+            (date(2017, 1, 23), 2457377),
+            (date(2017, 1, 6), 2017097),
+            (date(2017, 1, 3), 1959033),
+
+        ]
+        self.assertAlmostEqual(data['average_volume'], expected_average)
+        self.assertEqual(len(data['busy_days']), len(expected_days))
+        for exp_day, exp_vol in expected_days:
+            self.assertIn(exp_day, data['busy_days'])
+            self.assertEqual(exp_vol, data['busy_days'][exp_day])
+
 
 if __name__ == '__main__':
     unittest.main()
