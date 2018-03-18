@@ -56,6 +56,9 @@ def _add_parser_analysis_args(parsers: List[argparse.ArgumentParser]) -> None:
                             help="End month inclusive. Ex: 2017-06")
         parser.add_argument('symbol', nargs='+',
                             help="Stock symbol. Ex: GOOGL")
+        parser.add_argument('--adjusted', action='store_true',
+                            help="Use adjusted values where applicable")
+
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -92,8 +95,8 @@ def create_parser() -> argparse.ArgumentParser:
 
     best_days = subparsers.add_parser(
         'best-days',
-        help="For each symbol, determines which day offered the highest profit "
-             "from a single purchase and sale."
+        help="For each symbol, determines which day had the greatest spread "
+             "between its low and high."
     )
 
     busy_days = subparsers.add_parser(
@@ -141,11 +144,11 @@ def action_symbols(client: StockClient, pretty: bool = False) -> int:
 
 def action_month_averages(client: StockClient, symbols: List[str],
                           start_date: date, end_date: date,
-                          pretty: bool = False
+                          adjusted: bool = False, pretty: bool = False
                           ) -> int:
     results = {}
     for symbol in symbols:
-        results[symbol] = client.get_monthly_averages(symbol, start_date, end_date)
+        results[symbol] = client.get_monthly_averages(symbol, start_date, end_date, adjusted)
     print_json(results, pretty)
     return 0
 
@@ -159,7 +162,7 @@ def main(args: Any) -> int:
         return action_symbols(client, args.pretty)
     elif args.action == 'month-averages':
         return action_month_averages(client, args.symbol, args.start_month,
-                                     args.end_month, args.pretty)
+                                     args.end_month, args.adjusted, args.pretty)
     elif args.action == 'best-days':
         raise Exception("Not yet implemented")
     elif args.action == 'busy-days':

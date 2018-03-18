@@ -31,6 +31,8 @@ class StockClient(object):
     COL_DATE = 'Date'
     COL_OPEN = 'Open'
     COL_CLOSE = 'Close'
+    COL_ADJ_OPEN = 'Adj. Open'
+    COL_ADJ_CLOSE = 'Adj. Close'
 
     def __init__(self, http_client: HttpClient, api_key: str, base_url: str = None):
         """
@@ -94,6 +96,15 @@ class StockClient(object):
 
         return converted
 
+    def _group_by_month(self, days: List[Dict]) -> Dict[str, Dict]:
+        by_month = {}
+        for row in days:
+            key = row[self.COL_DATE].strftime('%Y-%m')
+            if key not in by_month:
+                by_month[key] = []
+            by_month[key].append(row)
+        return by_month
+
     def get_symbols(self) -> Dict[str, str]:
         """
         :return: Retrieves a dictionary of stock symbols and descriptions.
@@ -119,7 +130,9 @@ class StockClient(object):
         except HttpException as e:
             raise StockException("Network error") from e
 
-    def get_monthly_averages(self, symbol: str, start_date: date, end_date: date) -> Dict[str,Dict[str,float]]:
+    def get_monthly_averages(self, symbol: str, start_date: date,
+                             end_date: date, adjusted: bool
+                             ) -> Dict[str, Dict[str, float]]:
         url = "%s/v3/datasets/WIKI/%s/data.json" % (self.base_url, symbol)
         params = {
             self.PARAM_KEY:   self.api_key,
@@ -139,12 +152,14 @@ class StockClient(object):
         except json.decoder.JSONDecodeError as e:
             raise StockException("Data encoding error") from e
 
-        by_month = {}
-        for row in days:
-            key = row[self.COL_DATE].strftime('%Y-%m')
-            if key not in by_month:
-                by_month[key] = []
-            by_month[key].append(row)
+        by_month = self._group_by_month(days)
+
+        if adjusted:
+            open_column = self.COL_ADJ_OPEN
+            close_column = self.COL_ADJ_CLOSE
+        else:
+            open_column = self.COL_OPEN
+            close_column = self.COL_CLOSE
 
         results = {}  # Keyed by month
         for key, days in by_month.items():
@@ -153,11 +168,12 @@ class StockClient(object):
             day_count = 0.0
             assert len(days) > 0
             for day in days:
-                open_total += day[self.COL_OPEN]
-                close_total += day[self.COL_CLOSE]
+                open_total += day[open_column]
+                close_total += day[close_column]
                 day_count += 1
             results[key] = {
                 'average_open':  open_total / day_count,
                 'average_close': close_total / day_count,
             }
         return results
+
