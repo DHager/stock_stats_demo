@@ -87,6 +87,24 @@ class TestStockClient(unittest.TestCase):
             self.assertAlmostEqual(actuals['average_open'], expectations[k][0])
             self.assertAlmostEqual(actuals['average_close'], expectations[k][1])
 
+    def test_best_days(self):
+        url = 'http://example.com/v3/datasets/WIKI/GOOGL/data.json' \
+              '?api_key=KEY&end_date=2017-06-01&start_date=2017-01-01'
+        self.http_client.responses[url] = (self._get_data('averages1.json'), {})
+
+        data = self.stock_client.get_best_days(
+            'GOOGL',
+            date(2017, 1, 1),
+            date(2017, 6, 1),
+            adjusted=False
+        )
+
+        # Manually calculated
+        expected_date = date(2017, 6, 9)
+        expected_spread = 52.13
+
+        self.assertEqual(data['date'], expected_date)
+        self.assertAlmostEqual(data['spread'], expected_spread)
 
 if __name__ == '__main__':
     unittest.main()

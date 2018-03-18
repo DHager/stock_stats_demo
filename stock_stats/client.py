@@ -3,7 +3,7 @@ import json
 from collections import OrderedDict
 from datetime import date
 from io import TextIOWrapper
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Any
 from zipfile import BadZipfile, LargeZipFile, ZipFile
 
 from .http import HttpClient, HttpException
@@ -33,8 +33,13 @@ class StockClient(object):
     COL_CLOSE = 'Close'
     COL_ADJ_OPEN = 'Adj. Open'
     COL_ADJ_CLOSE = 'Adj. Close'
+    COL_LOW = 'Low'
+    COL_HIGH = 'High'
+    COL_ADJ_LOW = 'Adj. Low'
+    COL_ADJ_HIGH = 'Adj. High'
 
-    def __init__(self, http_client: HttpClient, api_key: str, base_url: str = None):
+    def __init__(self, http_client: HttpClient, api_key: str,
+                 base_url: str = None):
         """
         :param api_key: The API key
         :param base_url: The base URL to use, such as https://www.quandl.com/api
@@ -133,25 +138,7 @@ class StockClient(object):
     def get_monthly_averages(self, symbol: str, start_date: date,
                              end_date: date, adjusted: bool
                              ) -> Dict[str, Dict[str, float]]:
-        url = "%s/v3/datasets/WIKI/%s/data.json" % (self.base_url, symbol)
-        params = {
-            self.PARAM_KEY:   self.api_key,
-            self.PARAM_START: start_date.isoformat(),
-            self.PARAM_END:   end_date.isoformat(),
-
-            # Note: We can't ask the server to sum up the stats for us, because
-            # there may be gaps in days when market is closed, so we won't know
-            # how much to divide.
-        }
-        try:
-            body, headers = self.http.get(url, params)
-            json_body = json.loads(body)
-            days = self._convert_timeseries(json_body['dataset_data'])
-        except HttpException as e:
-            raise StockException("Network error") from e
-        except json.decoder.JSONDecodeError as e:
-            raise StockException("Data encoding error") from e
-
+        days = self._get_standard_timeseries(end_date, start_date, symbol)
         by_month = self._group_by_month(days)
 
         if adjusted:
@@ -177,3 +164,50 @@ class StockClient(object):
             }
         return results
 
+    def _get_standard_timeseries(self, end_date, start_date, symbol):
+        url = "%s/v3/datasets/WIKI/%s/data.json" % (self.base_url, symbol)
+        params = {
+            self.PARAM_KEY:   self.api_key,
+            self.PARAM_START: start_date.isoformat(),
+            self.PARAM_END:   end_date.isoformat(),
+
+            # Note: We can't ask the server to sum up the stats for us, because
+            # there may be gaps in days when market is closed, so we won't know
+            # how much to divide.
+        }
+        try:
+            body, headers = self.http.get(url, params)
+            json_body = json.loads(body)
+            days = self._convert_timeseries(json_body['dataset_data'])
+        except HttpException as e:
+            raise StockException("Network error") from e
+        except json.decoder.JSONDecodeError as e:
+            raise StockException("Data encoding error") from e
+        return days
+
+    def get_best_days(self, symbol: str, start_date: date,
+                      end_date: date, adjusted: bool
+                      ) -> Dict[str, Any]:
+
+        days = self._get_standard_timeseries(end_date, start_date, symbol)
+
+        if adjusted:
+            lo_column = self.COL_LOW
+            hi_column = self.COL_HIGH
+        else:
+            lo_column = self.COL_ADJ_LOW
+            hi_column = self.COL_ADJ_HIGH
+
+        best_spread = 0.0
+        best_day = None
+
+        for day in days:
+            spread = day[hi_column] - day[lo_column]
+            if spread > best_spread:
+                best_spread = spread
+                best_day = day
+
+        return {
+            "date":   best_day[self.COL_DATE],
+            "spread": best_spread
+        };
