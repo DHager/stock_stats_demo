@@ -69,7 +69,8 @@ class TestStockClient(unittest.TestCase):
         data = self.stock_client.get_monthly_averages(
             'GOOGL',
             date(2017, 1, 1),
-            date(2017, 6, 1)
+            date(2017, 6, 1),
+            adjusted=False
         )
 
         # Test results calculated independently from CSV output
@@ -105,6 +106,7 @@ class TestStockClient(unittest.TestCase):
 
         self.assertEqual(data['date'], expected_date)
         self.assertAlmostEqual(data['spread'], expected_spread)
+
 
 if __name__ == '__main__':
     unittest.main()

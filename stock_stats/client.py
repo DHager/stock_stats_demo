@@ -210,4 +210,4 @@ class StockClient(object):
         return {
             "date":   best_day[self.COL_DATE],
             "spread": best_spread
-        };
+        }
