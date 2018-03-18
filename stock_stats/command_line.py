@@ -153,6 +153,21 @@ def action_month_averages(client: StockClient, symbols: List[str],
     return 0
 
 
+def action_best_days(client: StockClient, symbols: List[str],
+                          start_date: date, end_date: date,
+                          adjusted: bool = False, pretty: bool = False
+                          ) -> int:
+    results = {}
+    for symbol in symbols:
+        result = client.get_best_days(symbol, start_date, end_date, adjusted)
+        # Adjust to make it JSON-able
+        result['date'] = result['date'].isoformat()
+        results[symbol] = result
+
+    print_json(results, pretty)
+    return 0
+
+
 def main(args: Any) -> int:
     http_client = HttpClient()
     client = StockClient(http_client, args.key)
@@ -164,7 +179,8 @@ def main(args: Any) -> int:
         return action_month_averages(client, args.symbol, args.start_month,
                                      args.end_month, args.adjusted, args.pretty)
     elif args.action == 'best-days':
-        raise Exception("Not yet implemented")
+        return action_best_days(client, args.symbol, args.start_month,
+                                args.end_month, args.adjusted, args.pretty)
     elif args.action == 'busy-days':
         raise Exception("Not yet implemented")
     elif args.action == 'biggest-loser':
