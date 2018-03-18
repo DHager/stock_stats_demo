@@ -193,6 +193,28 @@ def action_busy_days(client: StockClient, symbols: List[str],
     return 0
 
 
+def action_biggest_loser(client: StockClient, symbols: List[str],
+                     start_date: date, end_date: date,
+                     adjusted: bool = False, pretty: bool = False
+                     ) -> int:
+    worst_performers = [] # There might be ties
+    worst_count = -1
+    for symbol in symbols:
+        count = client.get_losing_day_count(symbol, start_date,
+                                            end_date, adjusted)
+        if count > worst_count:
+            worst_performers = [symbol]
+            worst_count = count
+        elif count == worst_count:
+            worst_performers.append(symbol)
+    results = {
+        'days':    worst_count,
+        'symbols': worst_performers
+    }
+    print_json(results, pretty)
+    return 0
+
+
 def main(args: Any) -> int:
     http_client = HttpClient()
     client = StockClient(http_client, args.key)
@@ -210,7 +232,8 @@ def main(args: Any) -> int:
         return action_busy_days(client, args.symbol, args.start_month,
                                 args.end_month, args.adjusted, args.pretty)
     elif args.action == 'biggest-loser':
-        raise Exception("Not yet implemented")
+        return action_biggest_loser(client, args.symbol, args.start_month,
+                                args.end_month, args.adjusted, args.pretty)
 
     return 4  # Nothing matched
 

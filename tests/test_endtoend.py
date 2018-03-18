@@ -102,6 +102,19 @@ class TestEndToEnd(unittest.TestCase):
         sample_busy_day = data['GOOGL']['busy_days']['2017-01-03']
         self.assertEqual(sample_busy_day, 1959033)
 
+    def test_bad_days(self):
+        with captured_output() as (out, err):
+            raw_args = ["biggest-loser", "--key", self.apikey,
+                        "2017-01", "2017-06", "GOOGL", 'MSFT']
+            args = self.parser.parse_args(raw_args)
+            code = main(args)
+            self.assertEqual(code, 0)
+        text = out.getvalue().strip()
+        data = json.loads(text)
+        self.assertIn("symbols", data)
+        self.assertIn("days", data)
+        self.assertIn('MSFT', data['symbols'])
+
 
 if __name__ == '__main__':
     unittest.main()
