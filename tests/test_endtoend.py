@@ -1,10 +1,11 @@
-import unittest
-import os
 import json
-from stock_stats.command_line import main, create_parser
-from tests import captured_output
+import os
+import unittest
 from typing import Dict
-from stock_stats import StockException
+
+from stock_stats.client import StockException
+from stock_stats.command_line import create_parser, main
+from .shared import captured_output
 
 
 @unittest.skipUnless(

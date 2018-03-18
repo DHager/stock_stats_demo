@@ -1,10 +1,11 @@
-import sys
 import os
-from tempfile import mkstemp
+import sys
 from contextlib import contextmanager
 from io import StringIO
-from stock_stats import HttpClient
-from typing import Tuple, Dict, List
+from tempfile import mkstemp
+from typing import Dict, List, Tuple
+
+from stock_stats.http import HttpClient
 
 
 @contextmanager

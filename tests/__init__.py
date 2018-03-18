@@ -1,1 +1,1 @@
-from .shared import captured_output
+__author__ = 'Darien Hager'

@@ -1,8 +1,7 @@
 import unittest
-import sys
-from argparse import ArgumentParser
+
 from stock_stats.command_line import create_parser
-from tests import captured_output
+from .shared import captured_output
 
 
 # We suppress these inspections because Pycharm seems to misunderstand the

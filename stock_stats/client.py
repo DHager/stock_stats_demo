@@ -1,11 +1,12 @@
-from .http import HttpClient, HttpException
-from zipfile import ZipFile, BadZipfile, LargeZipFile
-from io import TextIOWrapper
-import json
 import csv
+import json
 from collections import OrderedDict
 from datetime import date
-from typing import List, Dict, Union
+from io import TextIOWrapper
+from typing import Dict, List, Union
+from zipfile import BadZipfile, LargeZipFile, ZipFile
+
+from .http import HttpClient, HttpException
 
 
 class StockException(Exception):

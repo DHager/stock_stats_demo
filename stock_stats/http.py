@@ -1,7 +1,7 @@
-from urllib import request, response, parse
-from urllib.error import HTTPError, URLError, ContentTooShortError
-from typing import Tuple, Dict
 from collections import OrderedDict
+from typing import Dict, Tuple
+from urllib import parse, request
+from urllib.error import ContentTooShortError, HTTPError, URLError
 
 
 class HttpException(Exception):

@@ -1,9 +1,9 @@
-import unittest
 import os
-from stock_stats import StockClient, StockException, HttpClient
-from .shared import MockHttpClient
+import unittest
 from datetime import date
-from typing import Dict
+
+from stock_stats.client import StockClient, StockException
+from .shared import MockHttpClient
 
 
 class TestStockClient(unittest.TestCase):
