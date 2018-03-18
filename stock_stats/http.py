@@ -38,8 +38,11 @@ class HttpClient(object):
 
     def get(self, url: str, extra_params: Dict = None) -> Tuple[bytes, Dict[str, str]]:
         final_url = self._get_final_url(url, extra_params)
-        with request.urlopen(final_url) as result:
-            return result.read(), dict(result.info())
+        try:
+            with request.urlopen(final_url) as result:
+                return result.read(), dict(result.info())
+        except (HTTPError, URLError, ContentTooShortError) as e:
+            raise HttpException from e
 
     def download(self, url: str, extra_params: Dict = None) -> Tuple[str, Dict[str, str]]:
         """        
