@@ -6,14 +6,27 @@ import json
 from datetime import date
 from stock_stats import HttpClient, StockClient
 from typing import List
+from dateutil.relativedelta import relativedelta
 
 
-def parse_month(val: str) -> date:
+def _parse_month_begin(val: str) -> date:
+    return _parse_month(val, False)
+
+
+def _parse_month_end(val: str) -> date:
+    return _parse_month(val, True)
+
+
+def _parse_month(val: str, ending: bool = True) -> date:
     m = re.match(r"^(\d{4})-(\d{2})$", val)
     if m is None:
         raise argparse.ArgumentTypeError("Invalid year-month")
     try:
         d = date(int(m.group(1)), int(m.group(2)), 1)
+        if ending:
+            # Last day of same month. Not the first day of the next month,
+            # because the API we work against uses inclusive date ranges.
+            d = d + relativedelta(months=1, days=-1)
         return d
     except ValueError as e:
         raise argparse.ArgumentTypeError("Invalid year-month") from e
@@ -35,8 +48,8 @@ def _add_parser_global_args(parsers: List[argparse.ArgumentParser]) -> None:
 
 def _add_parser_analysis_args(parsers: List[argparse.ArgumentParser]) -> None:
     for parser in parsers:
-        parser.add_argument('start_month', type=parse_month, help="Start month inclusive. Ex: 2017-01")
-        parser.add_argument('end_month', type=parse_month, help="End month inclusive. Ex: 2017-06")
+        parser.add_argument('start_month', type=_parse_month_begin, help="Start month inclusive. Ex: 2017-01")
+        parser.add_argument('end_month', type=_parse_month_end, help="End month inclusive. Ex: 2017-06")
         parser.add_argument('symbol', nargs='+', help="Stock symbol. Ex: GOOGL")
 
 
