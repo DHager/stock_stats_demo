@@ -5,7 +5,7 @@ import json
 import csv
 from collections import OrderedDict
 from datetime import date
-from typing import List, Dict, Tuple
+from typing import List, Dict, Union
 
 
 class StockException(Exception):
@@ -27,8 +27,9 @@ class StockClient(object):
     PARAM_GROUP = 'collapse'
     PARAM_COMBINE = 'transform'
 
-    GROUP_MONTH = 'monthly'
-    COMBINE_TOTAL = 'cumul'
+    COL_DATE = 'Date'
+    COL_OPEN = 'Open'
+    COL_CLOSE = 'Close'
 
     def __init__(self, http_client: HttpClient, api_key: str, base_url: str = None):
         """
@@ -77,6 +78,20 @@ class StockClient(object):
         except csv.Error as e:
             raise StockException("Error parsing CSV") from e
 
+    def _convert_timeseries(self, dataset: Dict) -> List[Dict[str, Union[float, date]]]:
+        headers = dataset['column_names']
+        converted = []
+        for row in dataset['data']:
+            kv = dict(zip(headers, row))
+            parts = [int(s) for s in kv[self.COL_DATE].split("-")]
+            kv[self.COL_DATE] = date(*parts)
+            # Convert from a string to date-object
+            converted.append(kv)
+
+        # Shouldn't need to sort, server already returns our rows in reverse-
+        # chronological order
+
+        return converted
 
     def get_symbols(self) -> Dict[str, str]:
         """
@@ -103,21 +118,45 @@ class StockClient(object):
         except HttpException as e:
             raise StockException("Network error") from e
 
-    def get_monthly_averages(self, symbol: str, start_date: date, end_date: date) -> Dict:
+    def get_monthly_averages(self, symbol: str, start_date: date, end_date: date) -> Dict[str,Dict[str,float]]:
         url = "%s/v3/datasets/WIKI/%s/data.json" % (self.base_url, symbol)
         params = {
-            self.PARAM_KEY: self.api_key,
+            self.PARAM_KEY:   self.api_key,
             self.PARAM_START: start_date.isoformat(),
-            self.PARAM_END: end_date.isoformat(),
-            self.PARAM_GROUP: self.GROUP_MONTH,
-            self.PARAM_COMBINE: self.COMBINE_TOTAL,  # No average? We'll do the division ourselves.
+            self.PARAM_END:   end_date.isoformat(),
+
+            # Note: We can't ask the server to sum up the stats for us, because
+            # there may be gaps in days when market is closed, so we won't know
+            # how much to divide.
         }
         try:
-            """
-            column_index=4
-            """
-            content, headers = self.http.get(url, params)
-            d = json.loads(content)
-            return d
+            body, headers = self.http.get(url, params)
+            json_body = json.loads(body)
+            days = self._convert_timeseries(json_body['dataset_data'])
         except HttpException as e:
             raise StockException("Network error") from e
+        except json.decoder.JSONDecodeError as e:
+            raise StockException("Data encoding error") from e
+
+        by_month = {}
+        for row in days:
+            key = row[self.COL_DATE].strftime('%Y-%m')
+            if key not in by_month:
+                by_month[key] = []
+            by_month[key].append(row)
+
+        results = {}  # Keyed by month
+        for key, days in by_month.items():
+            open_total = 0.0
+            close_total = 0.0
+            day_count = 0.0
+            assert len(days) > 0
+            for day in days:
+                open_total += day[self.COL_OPEN]
+                close_total += day[self.COL_CLOSE]
+                day_count += 1
+            results[key] = {
+                'average_open':  open_total / day_count,
+                'average_close': close_total / day_count,
+            }
+        return results

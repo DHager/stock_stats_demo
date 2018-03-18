@@ -1,12 +1,11 @@
-from typing import Any
+from stock_stats import HttpClient, StockClient
 import re
 import argparse
 import sys
 import json
 from datetime import date
-from stock_stats import HttpClient, StockClient
-from typing import List
 from dateutil.relativedelta import relativedelta
+from typing import List, Any
 
 
 def _parse_month_begin(val: str) -> date:

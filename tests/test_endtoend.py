@@ -4,6 +4,7 @@ import json
 from stock_stats.command_line import main, create_parser
 from tests import captured_output
 from typing import Dict
+from stock_stats import StockException
 
 
 @unittest.skipUnless(
@@ -14,6 +15,7 @@ class TestEndToEnd(unittest.TestCase):
     These live tests approximate command-line input and check STDOUT, and are
     primarily used to help in active development and debugging.
     """
+
     def setUp(self):
         self.parser = create_parser()
         key_path = os.path.join(__file__, "..", "..", "apikey.txt")
@@ -41,16 +43,35 @@ class TestEndToEnd(unittest.TestCase):
         actual_entries = json.loads(out.getvalue().strip())
         self._assertDictSubset(expected_entries, actual_entries)
 
-    @unittest.skip("Incomplete")
     def test_month_averages(self):
         with captured_output() as (out, err):
-            raw_args = ["month-averages", "--key", self.apikey, "2017-01", "2017-06", "GOOGL"]
+            raw_args = ["month-averages", "--key", self.apikey,
+                        "2017-01", "2017-06", "GOOGL", 'MSFT']
             args = self.parser.parse_args(raw_args)
             code = main(args)
             self.assertEqual(code, 0)
         text = out.getvalue().strip()
         data = json.loads(text)
         self.assertIn("GOOGL", data)
+        self.assertIn("MSFT", data)
+        actual_googl_open = data['GOOGL']['2017-01']['average_open']
+        self.assertAlmostEqual(actual_googl_open, 829.854)
+
+    def test_error_invalid_symbol(self):
+        with self.assertRaises(StockException):
+            with captured_output():
+                raw_args = ["month-averages", "--key", self.apikey,
+                            "2017-01", "2017-01", "WEYLANDYUTANI"]
+                args = self.parser.parse_args(raw_args)
+                main(args)
+
+    def test_error_swapped_months(self):
+        with self.assertRaises(StockException):
+            with captured_output():
+                raw_args = ["month-averages", "--key", self.apikey,
+                            "2017-02", "2017-01", "GOOGL"]
+                args = self.parser.parse_args(raw_args)
+                main(args)
 
 
 if __name__ == '__main__':

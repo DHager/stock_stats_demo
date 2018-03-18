@@ -57,12 +57,31 @@ class TestStockClient(unittest.TestCase):
             )
             self.stock_client.get_symbols()
 
-    @unittest.skip("Incomplete")
     def test_monthly_averages(self):
-        url = 'http://example.com/v3/datasets/WIKI/GOOGL/data.json?api_key=KEY&collapse=monthly&end_date=2017-06-01&start_date=2017-01-01&transform=cumul'
-        self.http_client.responses[url] = (self.get_data('averages1.json'), {})
+        url = 'http://example.com/v3/datasets/WIKI/GOOGL/data.json' \
+              '?api_key=KEY&end_date=2017-06-01&start_date=2017-01-01'
+        self.http_client.responses[url] = (self._get_data('averages1.json'), {})
 
-        data = self.stock_client.get_monthly_averages('GOOGL', date(2017, 1, 1), date(2017, 6, 1))
+        data = self.stock_client.get_monthly_averages(
+            'GOOGL',
+            date(2017, 1, 1),
+            date(2017, 6, 1)
+        )
+
+        # Test results calculated independently from CSV output
+        expectations = {
+            # Month : (open, close)
+            '2017-01': (829.854, 830.2495),
+            '2017-02': (836.151052631579, 836.754736842105),
+            '2017-03': (853.858260869566, 853.789782608696),
+            '2017-04': (860.076578947368, 861.377631578947),
+            '2017-05': (959.595909090909, 961.654545454545),
+            '2017-06': (975.781818181818, 973.372727272728),
+        }
+        self.assertEqual(data.keys(), expectations.keys())
+        for k, actuals in data.items():
+            self.assertAlmostEqual(actuals['average_open'], expectations[k][0])
+            self.assertAlmostEqual(actuals['average_close'], expectations[k][1])
 
 
 if __name__ == '__main__':
