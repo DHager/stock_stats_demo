@@ -18,18 +18,18 @@ class TestArgumentParsing(unittest.TestCase):
         self.parser = create_parser()
 
     def test_help(self):
-        cmd = ["-h"]
+        cmdline = ["-h"]
         with self.assertRaises(SystemExit) as ecm:
             with captured_output() as (out, err):
-                self.parser.parse_args(cmd)
+                self.parser.parse_args(cmdline)
                 self.fail("Expected to end")
         self.assertEqual(ecm.exception.code, 0)
 
     def test_action_required(self):
-        cmd = ["--key", "mykey"]
+        cmdline = ["--key", "mykey"]
         with self.assertRaises(SystemExit) as ecm:
             with captured_output() as (out, err):
-                self.parser.parse_args(cmd)
+                self.parser.parse_args(cmdline)
                 self.fail("Expected to end")
         self.assertEqual(ecm.exception.code, 2)
 
@@ -41,29 +41,29 @@ class TestArgumentParsing(unittest.TestCase):
 
     def test_stats_basic(self):
         cmdline = ["month-averages", "--key", "mykey",
-                   "2001-01", "2020-01",
+                   "2017-01", "2017-02",
                    "BUY", "N", "LARGE"
                    ]
         with captured_output() as (out, err):
             args = self.parser.parse_args(cmdline)
-        self.assertIsNotNone(args)
+            self.assertIsNotNone(args)
 
     def test_missing_key(self):
         with self.assertRaises(SystemExit) as ecm:
             with captured_output() as (out, err):
                 self.parser.parse_args(["symbols"])
-            self.fail("Expected to end with error")
+                self.fail("Expected to end with error")
         self.assertEqual(ecm.exception.code, 2)
 
     def test_bad_date(self):
+        cmdline = ["stats", "--key", "mykey",
+                   "2001-15", "2020-99",
+                   "BUY", "N", "LARGE"
+                   ]
         with self.assertRaises(SystemExit) as ecm:
-            cmdline = ["stats", "--key", "mykey",
-                       "2001-15", "2020-99",
-                       "BUY", "N", "LARGE"
-                       ]
             with captured_output() as (out, err):
                 args = self.parser.parse_args(cmdline)
-            self.fail("Expected to end with error")
+                self.fail("Expected to end with error")
         self.assertEqual(ecm.exception.code, 2)
 
 

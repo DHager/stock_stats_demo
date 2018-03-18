@@ -3,16 +3,18 @@ import os
 from stock_stats import StockClient, StockException, HttpClient
 from .shared import MockHttpClient
 from datetime import date
+from typing import Dict
 
 
 class TestStockClient(unittest.TestCase):
     """
-    This set of tests uses canned HTTP responses to check the behavior of StockClient
+    This set of tests uses canned HTTP responses to check the behavior of
+    StockClient with canned HTTP responses.
     """
-    def get_data(self, filename: str) -> bytes:
+    def _get_data(self, filename: str) -> bytes:
         data_dir = os.path.join(os.path.dirname(__file__), "data")
-        fpath = os.path.join(data_dir, filename)
-        with open(fpath, 'rb') as f:
+        file_path = os.path.join(data_dir, filename)
+        with open(file_path, 'rb') as f:
             return f.read()
 
     def setUp(self):
@@ -23,8 +25,9 @@ class TestStockClient(unittest.TestCase):
         self.http_client.cleanup()
 
     def test_csv_parsing(self):
-        self.http_client.responses['http://example.com/v3/databases/WIKI/codes?api_key=KEY'] = (
-            self.get_data('symbols.csv'),
+        url = 'http://example.com/v3/databases/WIKI/codes?api_key=KEY'
+        self.http_client.responses[url] = (
+            self._get_data('symbols.csv'),
             {}
         )
         symbols = self.stock_client.get_symbols()
@@ -36,8 +39,9 @@ class TestStockClient(unittest.TestCase):
         self.assertEqual(expected, symbols)
 
     def test_zip_extraction(self):
-        self.http_client.responses['http://example.com/v3/databases/WIKI/codes?api_key=KEY'] = (
-            self.get_data('symbols.zip'),
+        url = 'http://example.com/v3/databases/WIKI/codes?api_key=KEY'
+        self.http_client.responses[url] = (
+            self._get_data('symbols.zip'),
             {StockClient.HEADER_CONTENT_TYPE: StockClient.CONTENT_TYPE_ZIP}
         )
         symbols = self.stock_client.get_symbols()
@@ -52,7 +56,7 @@ class TestStockClient(unittest.TestCase):
         url = 'http://example.com/v3/databases/WIKI/codes?api_key=KEY'
         with self.assertRaises(StockException):
             self.http_client.responses[url] = (
-                self.get_data('corrupt.zip'),
+                self._get_data('corrupt.zip'),
                 {StockClient.HEADER_CONTENT_TYPE: StockClient.CONTENT_TYPE_ZIP}
             )
             self.stock_client.get_symbols()
