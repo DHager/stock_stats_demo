@@ -6,8 +6,9 @@ from tests import captured_output
 from typing import Dict
 
 
-@unittest.skipIf(not os.path.isfile("apikey.txt"),
-                 "Live tests, skip if no stored API key")
+@unittest.skipUnless(
+    os.path.isfile(os.path.join(__file__, "..", "..", "apikey.txt")),
+    "Live tests, skip if no stored API key")
 class TestEndToEnd(unittest.TestCase):
     """
     These live tests approximate command-line input and check STDOUT, and are
@@ -15,7 +16,9 @@ class TestEndToEnd(unittest.TestCase):
     """
     def setUp(self):
         self.parser = create_parser()
-        self.apikey = open("apikey.txt", 'r').readline().strip()
+        key_path = os.path.join(__file__, "..", "..", "apikey.txt")
+        with open(key_path, 'r') as fh:
+            self.apikey = fh.readline().strip()
 
     def _assertDictSubset(self, smaller: Dict, larger: Dict):
         """
