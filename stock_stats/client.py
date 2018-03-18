@@ -238,3 +238,24 @@ class StockClient(object):
             "average_volume": mean_volume,
             "busy_days":      busy_days
         }
+
+    def get_losing_day_count(self, symbol: str, start_date: date,
+                             end_date: date, adjusted: bool
+                             ) -> int:
+
+        days = self._get_standard_timeseries(end_date, start_date, symbol)
+
+        if adjusted:
+            open_column = self.COL_ADJ_OPEN
+            close_column = self.COL_ADJ_CLOSE
+        else:
+            open_column = self.COL_OPEN
+            close_column = self.COL_CLOSE
+
+        #bad_days = len(list(filter(None,map(lambda d: d[close_column] < d[open_column], days)))
+        bad_days = 0
+        for day in days:
+            if day[close_column] < day[open_column]:
+                bad_days += 1
+
+        return bad_days

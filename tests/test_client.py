@@ -162,6 +162,20 @@ class TestStockClient(unittest.TestCase):
             self.assertIn(exp_day, data['busy_days'])
             self.assertEqual(exp_vol, data['busy_days'][exp_day])
 
+    def test_bad_days(self):
+        url = 'http://example.com/v3/datasets/WIKI/GOOGL/data.json' \
+              '?api_key=KEY&end_date=2017-06-01&start_date=2017-01-01'
+        self.http_client.responses[url] = (self._get_data('averages1.json'), {})
+
+        count = self.stock_client.get_losing_day_count(
+            'GOOGL',
+            date(2017, 1, 1),
+            date(2017, 6, 1),
+            adjusted=False
+        )
+
+        expected_count = 52
+        self.assertEqual(count, expected_count)
 
 if __name__ == '__main__':
     unittest.main()
