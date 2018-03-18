@@ -9,7 +9,7 @@ class TestStockClient(unittest.TestCase):
     """
     This set of tests uses canned HTTP responses to check the behavior of StockClient
     """
-    def get_data(self, filename: str) -> str:
+    def get_data(self, filename: str) -> bytes:
         data_dir = os.path.join(os.path.dirname(__file__), "data")
         fpath = os.path.join(data_dir, filename)
         with open(fpath, 'rb') as f:

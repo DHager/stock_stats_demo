@@ -4,7 +4,7 @@ from tempfile import mkstemp
 from contextlib import contextmanager
 from io import StringIO
 from stock_stats import HttpClient
-from typing import Tuple, Dict
+from typing import Tuple, Dict, List
 
 
 @contextmanager
@@ -24,6 +24,7 @@ def captured_output():
 class MockHttpClient(HttpClient):
     def __init__(self):
         # Maps specific URLs to outputs
+        super().__init__()
         self.responses = {}  # type: Dict[str, Tuple[str, Dict[str, str]]]
         self.tempfiles = []  # type: List[str]
 

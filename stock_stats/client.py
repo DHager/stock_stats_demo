@@ -47,11 +47,11 @@ class StockClient(object):
         actual = headers.get(self.HEADER_CONTENT_TYPE, None)
         return actual == self.CONTENT_TYPE_ZIP
 
-    def _payload_to_csv(self, temp_file: str, is_zip: bool = False) -> csv.reader:
+    def _parse_csv_file(self, temp_file: str, is_zip: bool = False) -> List[List]:
         """
         :param temp_file: Path to temporary file on disk
         :param is_zip: If true, indicates that the csv is packaged as the sole item inside a zip file.
-        :return: A CSV reader object.
+        :return: Row-data
         """
         try:
             if is_zip:
@@ -62,14 +62,21 @@ class StockClient(object):
                 csv_handle = archive.open(names[0])
 
                 # Workaround for ZipFile.open() not supporting text-mode
+                # Closing wrapper closes wrapped object as well
                 csv_handle = TextIOWrapper(csv_handle)
             else:
                 csv_handle = open(temp_file, "rt")
-            return csv.reader(csv_handle, csv.excel)
-        except csv.Error as e:
-            raise StockException("Error parsing CSV") from e
         except (BadZipfile, LargeZipFile) as e:
             raise StockException("Error extracting ZIP data") from e
+
+        try:
+            with csv_handle:
+                reader = csv.reader(csv_handle, csv.excel)
+                rows = list(reader)
+            return rows
+        except csv.Error as e:
+            raise StockException("Error parsing CSV") from e
+
 
     def get_symbols(self) -> Dict[str, str]:
         """
@@ -83,10 +90,10 @@ class StockClient(object):
             url = "%s/v3/databases/WIKI/codes" % (self.base_url,)
             temp_file, headers = self.http.download(url, params)
             is_zip = self._headers_indicate_zipfile(headers)
-            reader = self._payload_to_csv(temp_file, is_zip)
+            rows = self._parse_csv_file(temp_file, is_zip)
 
             result = OrderedDict()
-            for (symbol, desc) in reader:
+            for (symbol, desc) in rows:
                 # Intitial output seems to be in form DATABASE/DATASET, so we
                 # want to strip the WIKI/ part out.
                 short_name = symbol.split("/")[1]

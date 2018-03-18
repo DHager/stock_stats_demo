@@ -5,6 +5,10 @@ from stock_stats.command_line import create_parser
 from tests import captured_output
 
 
+# We suppress these inspections because Pycharm seems to misunderstand the
+# context-manager blocks.
+#
+# noinspection PyUnusedLocal,PyUnreachableCode
 class TestArgumentParsing(unittest.TestCase):
     """
     This set of tests exercises the code that changes command-line arguments
