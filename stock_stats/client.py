@@ -59,25 +59,26 @@ class StockClient(object):
         actual = headers.get(self.HEADER_CONTENT_TYPE, None)
         return actual == self.CONTENT_TYPE_ZIP
 
-    def _parse_csv_file(self, temp_file: str, is_zip: bool = False) -> List[List]:
+    def _parse_csv_file(self, path: str, is_zip: bool = False) -> List[List]:
         """
-        :param temp_file: Path to temporary file on disk
+        :param path: Path to temporary file on disk
         :param is_zip: If true, indicates that the csv is packaged as the sole item inside a zip file.
         :return: Row-data
         """
         try:
             if is_zip:
-                archive = ZipFile(temp_file, 'r')
+                archive = ZipFile(path, 'r')
                 names = archive.namelist()
                 if len(names) != 1:
-                    raise StockException("Unexpectedly got multiple files from API in zip-file")
+                    raise StockException(
+                        "Unexpectedly got multiple files from API in zip-file")
                 csv_handle = archive.open(names[0])
 
                 # Workaround for ZipFile.open() not supporting text-mode
                 # Closing wrapper closes wrapped object as well
                 csv_handle = TextIOWrapper(csv_handle)
             else:
-                csv_handle = open(temp_file, "rt")
+                csv_handle = open(path, "rt")
         except (BadZipfile, LargeZipFile) as e:
             raise StockException("Error extracting ZIP data") from e
 
@@ -89,7 +90,9 @@ class StockClient(object):
         except csv.Error as e:
             raise StockException("Error parsing CSV") from e
 
-    def _convert_timeseries(self, dataset: Dict) -> List[Dict[str, Union[float, date]]]:
+    def _convert_timeseries(self, dataset: Dict) \
+            -> List[Dict[str, Union[float, date]]]:
+
         headers = dataset['column_names']
         converted = []
         for row in dataset['data']:
@@ -138,7 +141,9 @@ class StockClient(object):
         except HttpException as e:
             raise StockException("Network error") from e
 
-    def get_monthly_averages(self, timeseries, adjusted: bool) -> Dict[str, Dict[str, float]]:
+    def get_monthly_averages(self, timeseries, adjusted: bool) \
+            -> Dict[str, Dict[str, float]]:
+
         by_month = self._group_by_month(timeseries)
 
         if adjusted:
