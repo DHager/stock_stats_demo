@@ -1,4 +1,5 @@
 import os
+
 from setuptools import setup
 
 
@@ -13,7 +14,7 @@ setup(
     author_email="project+stockdemo@technofovea.com",
     description="Analyzes data from Quandl Wiki Prices",
     license="MIT License",
-    #url="http://github.com/DHager/stock_stats_demo",
+    url="http://github.com/DHager/stock_stats_demo",
     packages=['stock_stats'],
     long_description=read('README.md'),
     classifiers=[
@@ -24,4 +25,5 @@ setup(
         'console_scripts': ['stock_stats=stock_stats.command_line:shell_entry'],
     },
     python_requires='>3.6.0',
+    install_requires=['dateutil']
 )

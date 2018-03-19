@@ -2,11 +2,12 @@
 
 A demo involving access to the Quandl WIKI Prices API and analysis of the data.
 
-This demo deliberately does NOT use quandl's own python package.
+This demo does not use Quandl's own REST client.
 
 ## Requirements
 
-Requires Python 3.6 or higher
+* Python 3 (3.6 recommended)
+* `dateutil` package
 
 ## Installation 
 
