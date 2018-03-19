@@ -138,11 +138,8 @@ class StockClient(object):
         except HttpException as e:
             raise StockException("Network error") from e
 
-    def get_monthly_averages(self, symbol: str, start_date: date,
-                             end_date: date, adjusted: bool
-                             ) -> Dict[str, Dict[str, float]]:
-        days = self._get_standard_timeseries(end_date, start_date, symbol)
-        by_month = self._group_by_month(days)
+    def get_monthly_averages(self, timeseries, adjusted: bool) -> Dict[str, Dict[str, float]]:
+        by_month = self._group_by_month(timeseries)
 
         if adjusted:
             open_column = self.COL_ADJ_OPEN
@@ -152,12 +149,12 @@ class StockClient(object):
             close_column = self.COL_CLOSE
 
         results = {}  # Keyed by month
-        for key, days in by_month.items():
+        for key, timeseries in by_month.items():
             open_total = 0.0
             close_total = 0.0
             day_count = 0.0
-            assert len(days) > 0
-            for day in days:
+            assert len(timeseries) > 0
+            for day in timeseries:
                 open_total += day[open_column]
                 close_total += day[close_column]
                 day_count += 1
@@ -167,12 +164,12 @@ class StockClient(object):
             }
         return results
 
-    def _get_standard_timeseries(self, end_date, start_date, symbol):
+    def get_standard_timeseries(self, symbol: str, start: date, end: date):
         url = "%s/v3/datasets/WIKI/%s/data.json" % (self.base_url, symbol)
         params = {
             self.PARAM_KEY:   self.api_key,
-            self.PARAM_START: start_date.isoformat(),
-            self.PARAM_END:   end_date.isoformat(),
+            self.PARAM_START: start.isoformat(),
+            self.PARAM_END:   end.isoformat(),
 
             # Note: We can't ask the server to sum up the stats for us, because
             # there may be gaps in days when market is closed, so we won't know
@@ -188,11 +185,7 @@ class StockClient(object):
             raise StockException("Data encoding error") from e
         return days
 
-    def get_best_day(self, symbol: str, start_date: date,
-                     end_date: date, adjusted: bool
-                     ) -> Dict[str, Any]:
-
-        days = self._get_standard_timeseries(end_date, start_date, symbol)
+    def get_best_day(self, timeseries, adjusted: bool) -> Dict[str, Any]:
 
         if adjusted:
             lo_column = self.COL_LOW
@@ -204,7 +197,7 @@ class StockClient(object):
         best_spread = 0.0
         best_day = None
 
-        for day in days:
+        for day in timeseries:
             spread = day[hi_column] - day[lo_column]
             if spread > best_spread:
                 best_spread = spread
@@ -215,11 +208,7 @@ class StockClient(object):
             "spread": best_spread
         }
 
-    def get_busy_days(self, symbol: str, start_date: date,
-                      end_date: date, adjusted: bool
-                      ) -> Dict[str, Any]:
-
-        days = self._get_standard_timeseries(end_date, start_date, symbol)
+    def get_busy_days(self, timeseries, adjusted: bool) -> Dict[str, Any]:
 
         if adjusted:
             vol_column = self.COL_VOLUME
@@ -227,11 +216,11 @@ class StockClient(object):
             vol_column = self.COL_ADJ_VOLUME
 
         total_volume = reduce(lambda a, b: a + b,
-                              map(lambda d: d[vol_column], days))
-        mean_volume = total_volume / len(days)
+                              map(lambda d: d[vol_column], timeseries))
+        mean_volume = total_volume / len(timeseries)
         threshold = mean_volume * 1.10
         busy_days = {}
-        for day in days:
+        for day in timeseries:
             if day[vol_column] > threshold:
                 busy_days[day[self.COL_DATE]] = day[vol_column]
         return {
@@ -239,11 +228,7 @@ class StockClient(object):
             "busy_days":      busy_days
         }
 
-    def get_losing_day_count(self, symbol: str, start_date: date,
-                             end_date: date, adjusted: bool
-                             ) -> int:
-
-        days = self._get_standard_timeseries(end_date, start_date, symbol)
+    def get_losing_day_count(self, timeseries, adjusted: bool) -> int:
 
         if adjusted:
             open_column = self.COL_ADJ_OPEN
@@ -252,9 +237,11 @@ class StockClient(object):
             open_column = self.COL_OPEN
             close_column = self.COL_CLOSE
 
-        #bad_days = len(list(filter(None,map(lambda d: d[close_column] < d[open_column], days)))
+        # bad_days = len(list(filter(None,
+        # map(lambda d: d[close_column] < d[open_column], timeseries)
+        # ))
         bad_days = 0
-        for day in days:
+        for day in timeseries:
             if day[close_column] < day[open_column]:
                 bad_days += 1
 

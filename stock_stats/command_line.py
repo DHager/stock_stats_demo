@@ -144,13 +144,8 @@ def print_json(data: Any, pretty=False):
     # ... which can be encountered when piping output to head.
     try:
         print(out)
-    except BrokenPipeError as e:
-        # This still prints to STDERR but it's a milder message
-        # print(e, file=sys.stderr)
-        # sys.stderr.close()
+    except BrokenPipeError:
         pass
-
-
 
 
 def action_symbols(client: StockClient, pretty: bool = False) -> int:
@@ -165,8 +160,8 @@ def action_month_averages(client: StockClient, symbols: List[str],
                           ) -> int:
     results = {}
     for symbol in symbols:
-        results[symbol] = client.get_monthly_averages(symbol, start_date,
-                                                      end_date, adjusted)
+        series = client.get_standard_timeseries(symbol, start_date, end_date)
+        results[symbol] = client.get_monthly_averages(series, adjusted)
     print_json(results, pretty)
     return 0
 
@@ -177,7 +172,8 @@ def action_best_days(client: StockClient, symbols: List[str],
                      ) -> int:
     results = {}
     for symbol in symbols:
-        result = client.get_best_day(symbol, start_date, end_date, adjusted)
+        series = client.get_standard_timeseries(symbol, start_date, end_date)
+        result = client.get_best_day(series, adjusted)
         # Adjust to make it JSON-able
         result['date'] = result['date'].isoformat()
         results[symbol] = result
@@ -192,7 +188,8 @@ def action_busy_days(client: StockClient, symbols: List[str],
                      ) -> int:
     results = {}
     for symbol in symbols:
-        result = client.get_busy_days(symbol, start_date, end_date, adjusted)
+        series = client.get_standard_timeseries(symbol, start_date, end_date)
+        result = client.get_busy_days(series, adjusted)
         # Adjust to make it JSON-able
         # Custom encoder won't work due to https://bugs.python.org/issue18820
         result['busy_days'] = {
@@ -206,14 +203,14 @@ def action_busy_days(client: StockClient, symbols: List[str],
 
 
 def action_biggest_loser(client: StockClient, symbols: List[str],
-                     start_date: date, end_date: date,
-                     adjusted: bool = False, pretty: bool = False
-                     ) -> int:
-    worst_performers = [] # There might be ties
+                         start_date: date, end_date: date,
+                         adjusted: bool = False, pretty: bool = False
+                         ) -> int:
+    worst_performers = []  # There might be ties
     worst_count = -1
     for symbol in symbols:
-        count = client.get_losing_day_count(symbol, start_date,
-                                            end_date, adjusted)
+        series = client.get_standard_timeseries(symbol, start_date, end_date)
+        count = client.get_losing_day_count(series, adjusted)
         if count > worst_count:
             worst_performers = [symbol]
             worst_count = count
@@ -245,7 +242,7 @@ def main(args: Any) -> int:
                                 args.end_month, args.adjusted, args.pretty)
     elif args.action == 'biggest-loser':
         return action_biggest_loser(client, args.symbol, args.start_month,
-                                args.end_month, args.adjusted, args.pretty)
+                                    args.end_month, args.adjusted, args.pretty)
 
     return 4  # Nothing matched
 

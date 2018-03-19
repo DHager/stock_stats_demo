@@ -66,12 +66,12 @@ class TestStockClient(unittest.TestCase):
               '?api_key=KEY&end_date=2017-06-01&start_date=2017-01-01'
         self.http_client.responses[url] = (self._get_data('averages1.json'), {})
 
-        data = self.stock_client.get_monthly_averages(
+        series = self.stock_client.get_standard_timeseries(
             'GOOGL',
             date(2017, 1, 1),
-            date(2017, 6, 1),
-            adjusted=False
+            date(2017, 6, 1)
         )
+        data = self.stock_client.get_monthly_averages(series, adjusted=False)
 
         # Test results calculated independently from CSV output
         expectations = {
@@ -93,12 +93,12 @@ class TestStockClient(unittest.TestCase):
               '?api_key=KEY&end_date=2017-06-01&start_date=2017-01-01'
         self.http_client.responses[url] = (self._get_data('averages1.json'), {})
 
-        data = self.stock_client.get_best_day(
+        series = self.stock_client.get_standard_timeseries(
             'GOOGL',
             date(2017, 1, 1),
-            date(2017, 6, 1),
-            adjusted=False
+            date(2017, 6, 1)
         )
+        data = self.stock_client.get_best_day(series, adjusted=False)
 
         # Manually calculated
         expected_date = date(2017, 6, 9)
@@ -112,12 +112,12 @@ class TestStockClient(unittest.TestCase):
               '?api_key=KEY&end_date=2017-06-01&start_date=2017-01-01'
         self.http_client.responses[url] = (self._get_data('averages1.json'), {})
 
-        data = self.stock_client.get_busy_days(
+        series = self.stock_client.get_standard_timeseries(
             'GOOGL',
             date(2017, 1, 1),
-            date(2017, 6, 1),
-            adjusted=False
+            date(2017, 6, 1)
         )
+        data = self.stock_client.get_busy_days(series, adjusted=False)
 
         expected_average = 1632363.696
         expected_days = [
@@ -167,15 +167,16 @@ class TestStockClient(unittest.TestCase):
               '?api_key=KEY&end_date=2017-06-01&start_date=2017-01-01'
         self.http_client.responses[url] = (self._get_data('averages1.json'), {})
 
-        count = self.stock_client.get_losing_day_count(
+        series = self.stock_client.get_standard_timeseries(
             'GOOGL',
             date(2017, 1, 1),
-            date(2017, 6, 1),
-            adjusted=False
+            date(2017, 6, 1)
         )
+        count = self.stock_client.get_losing_day_count(series, adjusted=False)
 
         expected_count = 52
         self.assertEqual(count, expected_count)
+
 
 if __name__ == '__main__':
     unittest.main()
