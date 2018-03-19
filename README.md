@@ -6,20 +6,38 @@ This demo does not use Quandl's own REST client.
 
 ## Requirements
 
+If you do not wish to use Docker, you will require:
+
 * Python 3 (3.6 recommended)
 * `dateutil` package
 
 ## Installation 
 
-You can install this tool using Distutils: Running `setup.py install` will create a `stock_stats` command. 
+### Option 1: Install locally
 
-Installation is not required, you can also run the program in-place with `python -m stock_stats` .
+Using setuptools/distutils:
+
+    python setup.py install # Creates stock_stats command
+    stock_stats --help
+
+### Option 2: Run locally without installation
+
+    python -m stock_stats --help
+
+### Option 3: Use a disposable test Docker container
+
+    # On local box, creates/runs docker container
+    docker/run.sh
+
+    # Inside docker container prompt
+    python setup.py install
+    stock_stats --help
 
 ## Example Usage
 
 Show help:
     
-    stock_stats -h
+    stock_stats --help
     
 List financial symbols that can be used
 
@@ -49,6 +67,6 @@ Note: Some tests are disabled unless you place a file called `apikey.txt` in the
    
 ## Removing
 
-If you used `setup.py install`, you should be able to remove the module with:
+If you used installation Option 1, you can remove the `stock_stats` command with:
 
     python -m pip uninstall "Stock-Price-Demo"
