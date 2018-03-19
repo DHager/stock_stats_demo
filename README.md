@@ -31,7 +31,7 @@ Get average open/close statistics for a 6 month span for 3 stocks (end month inc
 
 Determine which day had the biggest low-high variance for each symbol.
 
-    stock_stats best-days -k API_KEY 2017-01 2017-06 COF GOOGL MSFT --pretty
+    stock_stats top-variance-days -k API_KEY 2017-01 2017-06 COF GOOGL MSFT --pretty
 
 Determine days were significantly busier than average for each symbol.
 

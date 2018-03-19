@@ -74,9 +74,9 @@ class TestEndToEnd(unittest.TestCase):
                 args = self.parser.parse_args(raw_args)
                 main(args)
 
-    def test_best_days(self):
+    def test_top_variance_days(self):
         with captured_output() as (out, err):
-            raw_args = ["best-days", "--key", self.apikey,
+            raw_args = ["top-variance-days", "--key", self.apikey,
                         "2017-01", "2017-06", "GOOGL", 'MSFT']
             args = self.parser.parse_args(raw_args)
             code = main(args)

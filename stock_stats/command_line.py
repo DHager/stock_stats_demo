@@ -92,8 +92,8 @@ def create_parser() -> argparse.ArgumentParser:
         help="Calculates average statistics for a month-to-month span."
     )
 
-    best_days = subparsers.add_parser(
-        'best-days',
+    top_variance_days = subparsers.add_parser(
+        'top-variance-days',
         help="For each symbol, determines which day had the greatest variance "
              "between its low and high."
     )
@@ -112,14 +112,14 @@ def create_parser() -> argparse.ArgumentParser:
     _add_parser_global_args([
         listing,
         month_average,
-        best_days,
+        top_variance_days,
         busy_days,
         biggest_loser
     ])
 
     _add_parser_analysis_args([
         month_average,
-        best_days,
+        top_variance_days,
         busy_days,
         biggest_loser
     ])
@@ -166,14 +166,14 @@ def action_month_averages(client: StockClient, symbols: List[str],
     return 0
 
 
-def action_best_days(client: StockClient, symbols: List[str],
-                     start_date: date, end_date: date,
-                     adjusted: bool = False, pretty: bool = False
-                     ) -> int:
+def action_top_variance_days(client: StockClient, symbols: List[str],
+                             start_date: date, end_date: date,
+                             adjusted: bool = False, pretty: bool = False
+                             ) -> int:
     results = {}
     for symbol in symbols:
         series = client.get_standard_timeseries(symbol, start_date, end_date)
-        result = client.get_best_day(series, adjusted)
+        result = client.get_top_variance_day(series, adjusted)
         # Adjust to make it JSON-able
         result['date'] = result['date'].isoformat()
         results[symbol] = result
@@ -234,9 +234,10 @@ def main(args: Any) -> int:
     elif args.action == 'month-averages':
         return action_month_averages(client, args.symbol, args.start_month,
                                      args.end_month, args.adjusted, args.pretty)
-    elif args.action == 'best-days':
-        return action_best_days(client, args.symbol, args.start_month,
-                                args.end_month, args.adjusted, args.pretty)
+    elif args.action == 'top-variance-days':
+        return action_top_variance_days(client, args.symbol, args.start_month,
+                                        args.end_month, args.adjusted,
+                                        args.pretty)
     elif args.action == 'busy-days':
         return action_busy_days(client, args.symbol, args.start_month,
                                 args.end_month, args.adjusted, args.pretty)
