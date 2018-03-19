@@ -36,7 +36,7 @@ class MockHttpClient(HttpClient):
         content, headers = self.responses.get(final_url, (None, None))
 
         if content is None:
-            raise Exception("No preset response for URL '%s'" % url)
+            raise Exception("No preset response for URL '%s'" % final_url)
         if isinstance(content, str):
             content = bytes(content)
 

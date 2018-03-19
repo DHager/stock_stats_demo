@@ -9,7 +9,7 @@ from .shared import captured_output
 
 
 @unittest.skipUnless(
-    os.path.isfile(os.path.join(__file__, "..", "..", "apikey.txt")),
+    os.path.isfile(os.path.join(os.path.dirname(__file__), "..", "apikey.txt")),
     "Live tests, skip if no stored API key")
 class TestEndToEnd(unittest.TestCase):
     """
@@ -19,7 +19,7 @@ class TestEndToEnd(unittest.TestCase):
 
     def setUp(self):
         self.parser = create_parser()
-        key_path = os.path.join(__file__, "..", "..", "apikey.txt")
+        key_path = os.path.join(os.path.dirname(__file__), "..", "apikey.txt")
         with open(key_path, 'r') as fh:
             self.apikey = fh.readline().strip()
 

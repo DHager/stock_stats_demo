@@ -182,6 +182,8 @@ class StockClient(object):
         }
         try:
             body, headers = self.http.get(url, params)
+            if isinstance(body, bytes):
+                body = body.decode("utf-8")
             json_body = json.loads(body)
             days = self._convert_timeseries(json_body['dataset_data'])
         except HttpException as e:

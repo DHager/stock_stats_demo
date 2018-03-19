@@ -33,7 +33,7 @@ class HttpClient(object):
 
         url_components = list(parse.urlparse(url))
 
-        original_params = dict(parse.parse_qsl(url_components[4]))
+        original_params = OrderedDict(parse.parse_qsl(url_components[4]))
         original_params.update(ordered_params)
         url_components[4] = parse.urlencode(original_params)
 
