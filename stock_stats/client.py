@@ -62,7 +62,7 @@ class StockClient(object):
     def _parse_csv_file(self, path: str, is_zip: bool = False) -> List[List]:
         """
         :param path: Path to temporary file on disk
-        :param is_zip: If true, indicates that the csv is packaged as the sole item inside a zip file.
+        :param is_zip: File is zip, expect single CSV inside
         :return: Row-data
         """
         try:

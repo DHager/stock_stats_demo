@@ -26,7 +26,10 @@ class HttpClient(object):
 
         # We alphabetize the extra parameters for unit-testing purposes.
         # Doing so gives us a consistent repeatable final URL.
-        ordered_params = OrderedDict(sorted(extra_params.items(), key=lambda tup: tup[0]))
+        ordered_params = OrderedDict(sorted(
+            extra_params.items(),
+            key=lambda tup: tup[0]
+        ))
 
         url_components = list(parse.urlparse(url))
 
@@ -36,7 +39,9 @@ class HttpClient(object):
 
         return parse.urlunparse(url_components)
 
-    def get(self, url: str, extra_params: Dict = None) -> Tuple[bytes, Dict[str, str]]:
+    def get(self, url: str, extra_params: Dict = None) \
+            -> Tuple[bytes, Dict[str, str]]:
+
         final_url = self._get_final_url(url, extra_params)
         try:
             with request.urlopen(final_url) as result:
@@ -44,17 +49,18 @@ class HttpClient(object):
         except (HTTPError, URLError, ContentTooShortError) as e:
             raise HttpException from e
 
-    def download(self, url: str, extra_params: Dict = None) -> Tuple[str, Dict[str, str]]:
+    def download(self, url: str, extra_params: Dict = None) \
+            -> Tuple[str, Dict[str, str]]:
         """        
         Behaves similarly to urllib.request.urlretrieve()
         :param url: URL to GET
         :param extra_params: Key-values to append to URL
-        :return: The temp-file where the content has been downloaded, and a dictionary of HTTP response headers. 
+        :return: File path and HTTP headers
         """
         final_url = self._get_final_url(url, extra_params)
         try:
-
-            temp_file, headers = request.urlretrieve(final_url)  # API may be deprecated in future
+            # Docs suggest urlretrieve API may be deprecated in future
+            temp_file, headers = request.urlretrieve(final_url)
             return temp_file, headers
         except (HTTPError, URLError, ContentTooShortError) as e:
             raise HttpException from e

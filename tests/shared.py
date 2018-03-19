@@ -29,7 +29,9 @@ class MockHttpClient(HttpClient):
         self.responses = {}  # type: Dict[str, Tuple[str, Dict[str, str]]]
         self.tempfiles = []  # type: List[str]
 
-    def get(self, url: str, extra_params: Dict = None) -> Tuple[bytes, Dict[str, str]]:
+    def get(self, url: str, extra_params: Dict = None) \
+            -> Tuple[bytes, Dict[str, str]]:
+
         final_url = self._get_final_url(url, extra_params)
         content, headers = self.responses.get(final_url, (None, None))
 
@@ -40,7 +42,9 @@ class MockHttpClient(HttpClient):
 
         return content, headers
 
-    def download(self, url: str, extra_params: Dict = None) -> Tuple[str, Dict[str, str]]:
+    def download(self, url: str, extra_params: Dict = None) \
+            -> Tuple[str, Dict[str, str]]:
+
         final_url = self._get_final_url(url, extra_params)
         content, headers = self.get(final_url)
 
