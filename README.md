@@ -47,4 +47,8 @@ Note: Some tests are disabled unless you place a file called `apikey.txt` in the
 
     python -m unittest tests/test_*
    
+## Removing
 
+If you used `setup.py install`, you should be able to remove the module with:
+
+    python -m pip uninstall "Stock-Price-Demo"

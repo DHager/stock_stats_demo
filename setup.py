@@ -25,5 +25,6 @@ setup(
         'console_scripts': ['stock_stats=stock_stats.command_line:shell_entry'],
     },
     python_requires='>3.6.0',
-    install_requires=['dateutil']
+    # Tooling warns that dateutil is necessary, but I'm not sure if it's
+    # available through setuptools or not...
 )

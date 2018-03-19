@@ -1,3 +1,6 @@
 .idea
 *.pyc
+build/
+dist/
+Stock_Price_Demo.egg-info
 apikey.txt
