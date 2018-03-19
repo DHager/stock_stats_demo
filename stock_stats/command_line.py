@@ -94,7 +94,7 @@ def create_parser() -> argparse.ArgumentParser:
 
     best_days = subparsers.add_parser(
         'best-days',
-        help="For each symbol, determines which day had the greatest spread "
+        help="For each symbol, determines which day had the greatest variance "
              "between its low and high."
     )
 

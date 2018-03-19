@@ -29,7 +29,7 @@ Get average open/close statistics for a 6 month span for 3 stocks (end month inc
  
     stock_stats month-averages -k API_KEY 2017-01 2017-06 COF GOOGL MSFT --pretty 
 
-Determine which day had the biggest low-high spread for each symbol.
+Determine which day had the biggest low-high variance for each symbol.
 
     stock_stats best-days -k API_KEY 2017-01 2017-06 COF GOOGL MSFT --pretty
 

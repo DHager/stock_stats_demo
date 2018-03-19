@@ -102,10 +102,10 @@ class TestStockClient(unittest.TestCase):
 
         # Manually calculated
         expected_date = date(2017, 6, 9)
-        expected_spread = 52.13
+        expected_variance = 52.13
 
         self.assertEqual(data['date'], expected_date)
-        self.assertAlmostEqual(data['spread'], expected_spread)
+        self.assertAlmostEqual(data['variance'], expected_variance)
 
     def test_busy_days(self):
         url = 'http://example.com/v3/datasets/WIKI/GOOGL/data.json' \

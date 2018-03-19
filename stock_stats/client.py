@@ -199,18 +199,18 @@ class StockClient(object):
             lo_column = self.COL_ADJ_LOW
             hi_column = self.COL_ADJ_HIGH
 
-        best_spread = 0.0
+        best_variance = 0.0
         best_day = None
 
         for day in timeseries:
-            spread = day[hi_column] - day[lo_column]
-            if spread > best_spread:
-                best_spread = spread
+            variance = day[hi_column] - day[lo_column]
+            if variance > best_variance:
+                best_variance = variance
                 best_day = day
 
         return {
             "date":   best_day[self.COL_DATE],
-            "spread": best_spread
+            "variance": best_variance
         }
 
     def get_busy_days(self, timeseries, adjusted: bool) -> Dict[str, Any]:

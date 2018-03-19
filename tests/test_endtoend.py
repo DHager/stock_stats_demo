@@ -85,8 +85,8 @@ class TestEndToEnd(unittest.TestCase):
         data = json.loads(text)
         self.assertIn("GOOGL", data)
         self.assertIn("MSFT", data)
-        actual_googl_spread = data['GOOGL']['spread']
-        self.assertAlmostEqual(actual_googl_spread, 52.13)
+        actual_googl_variance = data['GOOGL']['variance']
+        self.assertAlmostEqual(actual_googl_variance, 52.13)
 
     def test_busy_days(self):
         with captured_output() as (out, err):
