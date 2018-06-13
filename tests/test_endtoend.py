@@ -5,7 +5,7 @@ from typing import Dict
 
 from stock_stats.client import StockException
 from stock_stats.command_line import create_parser, main
-from .shared import captured_output
+from tests.shared import captured_output
 
 
 @unittest.skipUnless(

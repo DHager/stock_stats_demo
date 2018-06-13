@@ -1,7 +1,7 @@
 import unittest
 
 from stock_stats.command_line import create_parser
-from .shared import captured_output
+from tests.shared import captured_output
 
 
 # We suppress these inspections because Pycharm seems to misunderstand the

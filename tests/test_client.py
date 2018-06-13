@@ -3,7 +3,7 @@ import unittest
 from datetime import date
 
 from stock_stats.client import StockClient, StockException
-from .shared import MockHttpClient
+from tests.shared import MockHttpClient
 
 
 class TestStockClient(unittest.TestCase):
